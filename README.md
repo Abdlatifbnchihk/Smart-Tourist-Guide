@@ -5,7 +5,6 @@
 
 [![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](#-license)
 [![Status](https://img.shields.io/badge/Status-In%20Development-yellow?style=for-the-badge)](#-roadmap)
@@ -18,7 +17,7 @@
 
 **Smart Tourist Guide Morocco** is a full-stack tourism platform that helps travelers discover Moroccan cities, attractions, and hotels, book accommodations and private transport, and get **AI-generated personalized itineraries**. Hotel owners and drivers get dedicated dashboards to manage listings, vehicles, and bookings, while admins moderate the entire catalog.
 
-The platform is built as a decoupled **Laravel 11 REST API** + **React 18 / TypeScript SPA**, with an integrated **AI layer powered by the Anthropic Claude API** for itinerary generation, smart recommendations, and a multilingual travel assistant.
+The platform is built as a decoupled **Laravel 11 REST API** + **React 18 SPA**, with an integrated **AI layer powered by the Anthropic Claude API** for itinerary generation, smart recommendations, and a multilingual travel assistant.
 
 ---
 
@@ -26,12 +25,12 @@ The platform is built as a decoupled **Laravel 11 REST API** + **React 18 / Type
 
 | Category | Features |
 |---|---|
-| 🔐 **Auth & Roles** | Register/login, role-based access (Admin, Tourist, Hotel Owner, Driver), profile management |
-| 🏙️ **Discovery** | Browse cities, search/filter attractions and hotels, geolocation-based results |
+| 🔐 **Auth & Roles** | Register/login, role-based access (Admin, Tourist, Driver), profile management |
+| 🏙️ **Discovery** | Browse cities, search/filter attractions, hotels, and restaurants |
 | 🏨 **Hotel Booking** | Room browsing, availability checks, checkout flow, booking status tracking |
-| 🚗 **Transport Booking** | Driver/vehicle browsing, fare estimation by distance, trip status tracking |
-| ⭐ **Reviews & Ratings** | Post-completion reviews for hotels, attractions, and drivers, with cached average ratings |
-| ❤️ **Favorites** | Save attractions and hotels to a personal wishlist |
+| 🚗 **Transport Booking** | Driver/vehicle browsing, trip booking, trip status tracking |
+| ⭐ **Reviews & Ratings** | Post-completion reviews for hotels, attractions, and drivers |
+| ❤️ **Favorites** | Save attractions, hotels, and restaurants to a personal wishlist |
 | 🤖 **AI Itinerary Generator** | Multi-day personalized itineraries based on interests and budget |
 | 🌍 **Multilingual** | English / French / Arabic content support |
 | 📊 **Dashboards** | Dedicated dashboards for Hotel Owners, Drivers, and Admins |
@@ -45,7 +44,7 @@ The platform is built as a decoupled **Laravel 11 REST API** + **React 18 / Type
 | Layer | Technology |
 |---|---|
 | **Backend** | ![Laravel](https://img.shields.io/badge/Laravel_11-FF2D20?style=flat-square&logo=laravel&logoColor=white) PHP 8.3 |
-| **Frontend** | ![React](https://img.shields.io/badge/React_18-61DAFB?style=flat-square&logo=react&logoColor=black) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white) |
+| **Frontend** | ![React](https://img.shields.io/badge/React_18-61DAFB?style=flat-square&logo=react&logoColor=black) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) |
 | **Styling** | ![Tailwind](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) |
 | **Database** | ![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?style=flat-square&logo=mysql&logoColor=white) |
 | **Cache/Queue** | ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white) |
@@ -96,9 +95,9 @@ graph TB
 
 | Module | Description |
 |---|---|
-| **Identity** | Roles, Users, Authentication |
-| **Catalog** | Cities, Attractions, Hotels, Rooms, Drivers, Vehicles |
-| **Bookings** | Hotel Bookings, Transport Bookings |
+| **Identity** | Users, Authentication (ENUM roles: admin, tourist, driver) |
+| **Catalog** | Cities, Attractions, Hotels, Rooms, Restaurants, Drivers, Vehicles |
+| **Transactions** | Unified Bookings (hotel + transport) |
 | **Engagement** | Reviews, Favorites |
 | **AI** | Itinerary generation, recommendations, chat assistant |
 
@@ -230,35 +229,56 @@ curl -X POST "http://localhost:8000/api/v1/hotel-bookings" \
 
 ## 🗄️ Database Design Overview
 
-12 core tables spanning Identity, Catalog, Bookings, and Engagement domains. Full column-level documentation, business rules, validation, and Laravel relationships for every table: [`docs/database.md`](docs/database.md).
+13 core tables spanning Identity, Catalog, Transactions, and Engagement domains. Full column-level documentation, business rules, validation, and Laravel relationships for every table: [`docs/database.md`](docs/database.md).
+
+**Key design decisions:**
+- Role-based access via ENUM on `users` table (no separate `roles` table)
+- Unified `bookings` table with nullable FKs for `room_id` and `driver_id`
+- Reviews and favorites use explicit FK columns per entity (not polymorphic)
+- Account moderation via `status` ENUM on `users` table
 
 | Table | Relationship | Target |
 |---|---|---|
-| users | belongsTo | roles |
-| hotels | belongsTo | users, cities |
-| rooms | belongsTo | hotels |
-| attractions | belongsTo | cities |
+| users | — | (ENUM role: admin, tourist, driver) |
+| cities | — | — |
 | drivers | belongsTo | users, cities |
 | vehicles | belongsTo | drivers |
-| hotel_bookings | belongsTo | users, hotels, rooms |
-| transport_bookings | belongsTo | users, drivers, vehicles |
-| reviews | morphTo | attractions, hotels, drivers |
-| favorites | morphTo | attractions, hotels |
+| hotels | belongsTo | cities |
+| rooms | belongsTo | hotels |
+| restaurants | belongsTo | cities |
+| attractions | belongsTo | cities |
+| bookings | belongsTo | users, rooms (nullable), drivers (nullable) |
+| reviews | belongsTo | users, hotels (nullable), drivers (nullable), attractions (nullable) |
+| favorites | belongsTo | users, hotels (nullable), restaurants (nullable), attractions (nullable) |
 
 ```mermaid
 erDiagram
-    ROLES ||--o{ USERS : has
-    USERS ||--o| DRIVERS : has
-    USERS ||--o| HOTELS : owns
-    CITIES ||--o{ ATTRACTIONS : contains
-    CITIES ||--o{ HOTELS : contains
-    HOTELS ||--o{ ROOMS : has
-    HOTELS ||--o{ HOTEL_BOOKINGS : receives
-    ROOMS ||--o{ HOTEL_BOOKINGS : booked
-    DRIVERS ||--o{ VEHICLES : owns
-    DRIVERS ||--o{ TRANSPORT_BOOKINGS : fulfills
-    USERS ||--o{ REVIEWS : writes
-    USERS ||--o{ FAVORITES : saves
+    USERS ||--o| DRIVERS : "has driver profile"
+    USERS ||--o{ BOOKINGS : "makes"
+    USERS ||--o{ REVIEWS : "writes"
+    USERS ||--o{ FAVORITES : "saves"
+
+    CITIES ||--o{ HOTELS : "contains"
+    CITIES ||--o{ RESTAURANTS : "contains"
+    CITIES ||--o{ ATTRACTIONS : "contains"
+    CITIES ||--o{ DRIVERS : "operates in"
+
+    HOTELS ||--o{ ROOMS : "has many"
+    DRIVERS ||--o{ VEHICLES : "owns"
+
+    BOOKINGS }o--|| USERS : "belongs to"
+    BOOKINGS }o--o| ROOMS : "optionally reserves"
+    BOOKINGS }o--o| DRIVERS : "optionally assigns"
+
+    REVIEWS }o--|| USERS : "written by"
+    REVIEWS }o--o| HOTELS : "about hotel"
+    REVIEWS }o--o| DRIVERS : "about driver"
+    REVIEWS }o--o| ATTRACTIONS : "about attraction"
+
+    FAVORITES }o--|| USERS : "saved by"
+    FAVORITES }o--o| HOTELS : "hotel"
+    FAVORITES }o--o| RESTAURANTS : "restaurant"
+    FAVORITES }o--o| ATTRACTIONS : "attraction"
 ```
 
 ---
@@ -284,7 +304,7 @@ smart-tourist-guide/
 │   ├── routes/
 │   ├── database/
 │   └── config/
-├── frontend/            # React + Vite + TypeScript SPA
+├── frontend/            # React + Vite SPA
 │   ├── src/
 │   ├── components/
 │   ├── pages/
@@ -344,7 +364,7 @@ Full workflow, PR checklist, and release process: [`docs/git-workflow.md`](docs/
 
 ## 🗺️ Roadmap
 
-- [x] Core database design (12 tables)
+- [x] Core database design (13 tables)
 - [x] Authentication & role-based access
 - [ ] Hotel & transport booking engines
 - [ ] AI itinerary generator (Claude API integration)
