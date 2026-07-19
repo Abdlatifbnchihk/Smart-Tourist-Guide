@@ -8,59 +8,59 @@ smart-tourist-guide/
 │   ├── app/
 │   │   ├── Console/
 │   │   ├── Enums/
+│   │   │   ├── Role.php
+│   │   │   ├── UserStatus.php
 │   │   │   ├── BookingStatus.php
-│   │   │   └── PaymentStatus.php
+│   │   │   └── BookingType.php
 │   │   ├── Exceptions/
 │   │   ├── Http/
 │   │   │   ├── Controllers/
 │   │   │   │   └── Api/
 │   │   │   │       └── V1/
 │   │   │   │           ├── AuthController.php
-│   │   │   │           ├── RoleController.php
 │   │   │   │           ├── UserController.php
 │   │   │   │           ├── CityController.php
 │   │   │   │           ├── AttractionController.php
 │   │   │   │           ├── HotelController.php
 │   │   │   │           ├── RoomController.php
+│   │   │   │           ├── RestaurantController.php
 │   │   │   │           ├── DriverController.php
 │   │   │   │           ├── VehicleController.php
-│   │   │   │           ├── HotelBookingController.php
-│   │   │   │           ├── TransportBookingController.php
+│   │   │   │           ├── BookingController.php
 │   │   │   │           ├── ReviewController.php
 │   │   │   │           ├── FavoriteController.php
 │   │   │   │           └── AiController.php
 │   │   │   ├── Middleware/
 │   │   │   ├── Requests/
-│   │   │   │   ├── StoreHotelBookingRequest.php
-│   │   │   │   ├── StoreTransportBookingRequest.php
+│   │   │   │   ├── StoreBookingRequest.php
 │   │   │   │   ├── StoreReviewRequest.php
+│   │   │   │   ├── StoreFavoriteRequest.php
 │   │   │   │   └── ...
 │   │   │   └── Resources/
 │   │   │       ├── UserResource.php
 │   │   │       ├── HotelResource.php
 │   │   │       ├── RoomResource.php
-│   │   │       ├── HotelBookingResource.php
+│   │   │       ├── RestaurantResource.php
+│   │   │       ├── BookingResource.php
 │   │   │       └── ...
 │   │   ├── Models/
-│   │   │   ├── Role.php
 │   │   │   ├── User.php
 │   │   │   ├── City.php
 │   │   │   ├── Attraction.php
 │   │   │   ├── Hotel.php
 │   │   │   ├── Room.php
+│   │   │   ├── Restaurant.php
 │   │   │   ├── Driver.php
 │   │   │   ├── Vehicle.php
-│   │   │   ├── HotelBooking.php
-│   │   │   ├── TransportBooking.php
+│   │   │   ├── Booking.php
 │   │   │   ├── Review.php
 │   │   │   └── Favorite.php
 │   │   ├── Policies/
 │   │   ├── Providers/
 │   │   └── Services/
-│   │       ├── HotelBookingService.php
-│   │       ├── TransportBookingService.php
+│   │       ├── BookingService.php
 │   │       ├── ReviewService.php
-│   │       ├── RatingCalculator.php
+│   │       ├── FavoriteService.php
 │   │       └── AiItineraryService.php
 │   ├── bootstrap/
 │   ├── config/
@@ -68,7 +68,6 @@ smart-tourist-guide/
 │   │   ├── factories/
 │   │   ├── migrations/
 │   │   └── seeders/
-│   │       ├── RoleSeeder.php
 │   │       ├── CitySeeder.php
 │   │       └── DatabaseSeeder.php
 │   ├── routes/
@@ -90,6 +89,7 @@ smart-tourist-guide/
 │   │   ├── components/
 │   │   │   ├── common/
 │   │   │   ├── hotels/
+│   │   │   ├── restaurants/
 │   │   │   ├── attractions/
 │   │   │   ├── bookings/
 │   │   │   └── layout/
@@ -97,11 +97,12 @@ smart-tourist-guide/
 │   │   │   ├── Home.tsx
 │   │   │   ├── CityDetail.tsx
 │   │   │   ├── HotelDetail.tsx
+│   │   │   ├── RestaurantDetail.tsx
 │   │   │   ├── AttractionDetail.tsx
 │   │   │   ├── BookingCheckout.tsx
 │   │   │   ├── Dashboard/
 │   │   │   │   ├── TouristDashboard.tsx
-│   │   │   │   ├── HotelOwnerDashboard.tsx
+│   │   │   │   ├── HotelManagerDashboard.tsx
 │   │   │   │   └── DriverDashboard.tsx
 │   │   │   └── Auth/
 │   │   │       ├── Login.tsx
@@ -110,7 +111,9 @@ smart-tourist-guide/
 │   │   ├── services/
 │   │   │   ├── apiClient.ts
 │   │   │   ├── hotelService.ts
+│   │   │   ├── restaurantService.ts
 │   │   │   ├── bookingService.ts
+│   │   │   ├── favoriteService.ts
 │   │   │   └── aiService.ts
 │   │   ├── types/
 │   │   ├── utils/
@@ -149,10 +152,11 @@ smart-tourist-guide/
 | `backend/app/Http/Controllers` | HTTP-layer orchestration only — no business logic |
 | `backend/app/Http/Requests` | Input validation rules per endpoint |
 | `backend/app/Http/Resources` | Consistent JSON response shaping |
-| `backend/app/Services` | Core business logic (booking, pricing, rating calc, AI) |
+| `backend/app/Services` | Core business logic (booking, review, favorite, AI) |
 | `backend/app/Models` | Eloquent models, relationships, casts, scopes |
+| `backend/app/Enums` | PHP 8.1+ backed enums for role, status, booking type |
 | `backend/database/migrations` | Versioned schema definitions |
-| `backend/database/seeders` | Demo/reference data (roles, cities) |
+| `backend/database/seeders` | Demo/reference data (cities) |
 | `frontend/src/pages` | Route-level screens |
 | `frontend/src/components` | Reusable presentational components |
 | `frontend/src/services` | API client wrappers (one file per domain) |
@@ -179,6 +183,7 @@ graph TD
     APP --> SERVICES[Services]
     APP --> REQUESTS[Http/Requests]
     APP --> RESOURCES[Http/Resources]
+    APP --> ENUMS[Enums]
 
     FRONTEND --> SRC[src/]
     SRC --> PAGES[pages/]
