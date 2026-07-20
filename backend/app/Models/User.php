@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -22,13 +21,14 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'role_id',
-        'name',
+        'first_name',
+        'last_name',
         'email',
-        'password',
         'phone',
-        'avatar',
-        'is_active',
+        'password',
+        'role',
+        'status',
+        'active',
     ];
 
     /**
@@ -49,15 +49,9 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_active' => 'boolean',
+            'active' => 'boolean',
         ];
-    }
-
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(Role::class);
     }
 
     public function driver(): HasOne
@@ -65,19 +59,9 @@ class User extends Authenticatable
         return $this->hasOne(Driver::class);
     }
 
-    public function hotel(): HasOne
+    public function bookings(): HasMany
     {
-        return $this->hasOne(Hotel::class);
-    }
-
-    public function hotelBookings(): HasMany
-    {
-        return $this->hasMany(HotelBooking::class);
-    }
-
-    public function transportBookings(): HasMany
-    {
-        return $this->hasMany(TransportBooking::class);
+        return $this->hasMany(Booking::class);
     }
 
     public function reviews(): HasMany
