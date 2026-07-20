@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,6 +28,17 @@ Route::prefix('v1')->group(function () {
 
     // Protected routes (require authentication)
     Route::middleware('auth:sanctum')->group(function () {
+
+        // Test route for Sanctum verification
+        Route::get('/test-auth', function () {
+            return response()->json(['message' => 'Authenticated successfully']);
+        });
+
+        // Token management routes
+        Route::post('/tokens', [AuthController::class, 'issueToken']);
+        Route::get('/tokens', [AuthController::class, 'listTokens']);
+        Route::delete('/tokens/{tokenId}', [AuthController::class, 'revokeToken']);
+        Route::delete('/tokens', [AuthController::class, 'revokeAllTokens']);
 
         // Auth routes
         // Route::post('/auth/logout', [AuthController::class, 'logout']);

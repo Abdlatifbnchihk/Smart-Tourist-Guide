@@ -51,7 +51,7 @@ The system SHALL enforce `phone` as NOT NULL and UNIQUE across all users.
 - **THEN** the database SHALL reject the insert
 
 ### Requirement: User model has correct relationships
-The User model SHALL define relationships: `driver()` (hasOne), `bookings()` (hasMany), `reviews()` (hasMany), `favorites()` (hasMany). The `role()` belongsTo relationship SHALL be removed.
+The User model SHALL define relationships: `driver()` (hasOne), `bookings()` (hasMany), `reviews()` (hasMany), `favorites()` (hasMany), and include the `HasApiTokens` trait from Laravel Sanctum. The `role()` belongsTo relationship SHALL be removed.
 
 #### Scenario: User can access driver profile
 - **WHEN** a user with `role = 'Driver'` calls `$user->driver`
@@ -64,6 +64,10 @@ The User model SHALL define relationships: `driver()` (hasOne), `bookings()` (ha
 #### Scenario: User model has no role relationship
 - **WHEN** a user calls `$user->role`
 - **THEN** the system SHALL NOT have a belongsTo relationship (role is a string column)
+
+#### Scenario: User model has HasApiTokens trait
+- **WHEN** a User model instance is created
+- **THEN** the model SHALL use the `HasApiTokens` trait from `Laravel\Sanctum\HasApiTokens`
 
 ### Requirement: User model has correct fillable fields
 The User model SHALL have `$fillable` = `['first_name', 'last_name', 'email', 'phone', 'password', 'role', 'status', 'active']`.
