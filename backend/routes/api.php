@@ -23,8 +23,8 @@ Route::prefix('v1')->group(function () {
     });
 
     // Auth routes (public)
-    // Route::post('/auth/register', [AuthController::class, 'register']);
-    // Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/register', [AuthController::class, 'register']);
+    Route::post('/auth/login', [AuthController::class, 'login']);
 
     // Protected routes (require authentication)
     Route::middleware('auth:sanctum')->group(function () {
@@ -40,36 +40,48 @@ Route::prefix('v1')->group(function () {
         Route::delete('/tokens/{tokenId}', [AuthController::class, 'revokeToken']);
         Route::delete('/tokens', [AuthController::class, 'revokeAllTokens']);
 
-        // Auth routes
-        // Route::post('/auth/logout', [AuthController::class, 'logout']);
-        // Route::get('/auth/me', [AuthController::class, 'me']);
+        // Auth routes (protected)
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::get('/auth/me', [AuthController::class, 'me']);
 
         // Admin routes
         Route::middleware('role:admin')->prefix('admin')->group(function () {
-            // Route::apiResource('users', UserController::class);
-            // Route::apiResource('roles', RoleController::class);
+            Route::apiResource('users', \App\Http\Controllers\Admin\UserController::class);
+            Route::apiResource('roles', \App\Http\Controllers\Admin\RoleController::class);
         });
 
         // Catalog routes
-        // Route::apiResource('cities', CityController::class);
-        // Route::apiResource('attractions', AttractionController::class);
-        // Route::apiResource('hotels', HotelController::class);
-        // Route::apiResource('rooms', RoomController::class);
-        // Route::apiResource('drivers', DriverController::class);
-        // Route::apiResource('vehicles', VehicleController::class);
+        Route::apiResource('cities', \App\Http\Controllers\CityController::class);
+        Route::apiResource('attractions', \App\Http\Controllers\AttractionController::class);
+        Route::apiResource('hotels', \App\Http\Controllers\HotelController::class);
+        Route::apiResource('rooms', \App\Http\Controllers\RoomController::class);
+        Route::apiResource('drivers', \App\Http\Controllers\DriverController::class);
+        Route::apiResource('vehicles', \App\Http\Controllers\VehicleController::class);
 
         // Booking routes
-        // Route::apiResource('hotel-bookings', HotelBookingController::class);
-        // Route::apiResource('transport-bookings', TransportBookingController::class);
+        Route::apiResource('hotel-bookings', \App\Http\Controllers\HotelBookingController::class);
+        Route::apiResource('transport-bookings', \App\Http\Controllers\TransportBookingController::class);
 
         // Review routes
-        // Route::apiResource('reviews', ReviewController::class);
+        Route::apiResource('reviews', \App\Http\Controllers\ReviewController::class);
 
         // Favorite routes
-        // Route::get('/favorites', [FavoriteController::class, 'index']);
-        // Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']);
+        Route::get('/favorites', [\App\Http\Controllers\FavoriteController::class, 'index']);
+        Route::post('/favorites/toggle', [\App\Http\Controllers\FavoriteController::class, 'toggle']);
+
+        // Hotel Manager routes
+        Route::middleware('role:hotel_manager')->prefix('hotel-manager')->group(function () {
+            Route::apiResource('manage-hotel', \App\Http\Controllers\HotelManager\HotelController::class);
+            Route::apiResource('manage-rooms', \App\Http\Controllers\HotelManager\RoomController::class);
+        });
+
+        // Driver routes
+        Route::middleware('role:driver')->prefix('driver')->group(function () {
+            Route::apiResource('manage-vehicle', \App\Http\Controllers\Driver\VehicleController::class);
+            Route::apiResource('transport-bookings', \App\Http\Controllers\Driver\BookingController::class)->only(['index', 'show', 'update']);
+        });
 
         // AI routes
-        // Route::post('/ai/itinerary', [AiController::class, 'generateItinerary']);
+        Route::post('/ai/itinerary', [\App\Http\Controllers\AiController::class, 'generateItinerary']);
     });
 });
