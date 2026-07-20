@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginUserRequest;
+use App\Http\Requests\RegisterUserRequest;
+use App\Models\Driver;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,17 +17,8 @@ class AuthController extends Controller
     /**
      * Register a new user.
      */
-    public function register(Request $request): JsonResponse
+    public function register(RegisterUserRequest $request): JsonResponse
     {
-        $request->validate([
-            'first_name' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
-            'email' => 'required|email|max:150|unique:users',
-            'phone' => 'required|string|max:20|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:Tourist,Driver,Hotel Manager,Administrator',
-        ]);
-
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -35,6 +29,16 @@ class AuthController extends Controller
             'status' => 'Pending',
             'active' => true,
         ]);
+
+        if ($request->role === 'Driver') {
+            Driver::create([
+                'user_id' => $user->user_id,
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'city_id' => $request->city_id,
+                'license_number' => $request->license_number,
+            ]);
+        }
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -47,13 +51,8 @@ class AuthController extends Controller
     /**
      * Login user and return token.
      */
-    public function login(Request $request): JsonResponse
+    public function login(LoginUserRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
