@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
+use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -51,6 +53,8 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
             'active' => 'boolean',
+            'role' => Role::class,
+            'status' => UserStatus::class,
         ];
     }
 
