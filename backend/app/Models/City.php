@@ -15,34 +15,22 @@ class City extends Model
     protected $fillable = [
         'name',
         'region',
-        'country',
         'description',
-        'image',
-        'latitude',
-        'longitude',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    public function hotels(): HasMany
     {
-        return [
-            'latitude' => 'decimal:7',
-            'longitude' => 'decimal:7',
-        ];
+        return $this->hasMany(Hotel::class);
+    }
+
+    public function restaurants(): HasMany
+    {
+        return $this->hasMany(Restaurant::class);
     }
 
     public function attractions(): HasMany
     {
         return $this->hasMany(Attraction::class);
-    }
-
-    public function hotels(): HasMany
-    {
-        return $this->hasMany(Hotel::class);
     }
 
     public function drivers(): HasMany

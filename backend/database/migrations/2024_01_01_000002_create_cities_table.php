@@ -15,11 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100)->unique();
             $table->string('region', 100)->nullable();
-            $table->string('country', 100)->default('Morocco');
             $table->text('description')->nullable();
-            $table->string('image')->nullable();
-            $table->decimal('latitude', 10, 7)->nullable();
-            $table->decimal('longitude', 10, 7)->nullable();
             $table->timestamps();
         });
     }
