@@ -1214,3 +1214,5 @@ class Favorite extends Model
 | Availability queries | Indexes on `start_date` / `end_date` for fast overlap checks on bookings |
 | Rating lookups | Index on `rating` column in reviews for filtering/sorting |
 
+notice 
+in api.php file I need to add a name spece instead of using \App\Http\Controllers\HotelManager\
