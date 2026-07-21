@@ -46,7 +46,7 @@ Route::prefix('v1')->group(function () {
 
         // Admin routes
         Route::middleware('role:admin')->prefix('admin')->group(function () {
-            Route::apiResource('users', \App\Http\Controllers\Admin\UserController::class);
+            Route::apiResource('users', \App\Http\Controllers\Admin\AdminController::class);
             Route::apiResource('roles', \App\Http\Controllers\Admin\RoleController::class);
         });
 
