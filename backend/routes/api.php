@@ -57,6 +57,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('rooms', \App\Http\Controllers\RoomController::class);
         Route::apiResource('drivers', \App\Http\Controllers\DriverController::class);
         Route::apiResource('vehicles', \App\Http\Controllers\VehicleController::class);
+        Route::apiResource('restaurants', \App\Http\Controllers\RestaurantController::class);
 
         // Booking routes
         Route::apiResource('hotel-bookings', \App\Http\Controllers\HotelBookingController::class);
