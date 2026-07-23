@@ -291,3 +291,197 @@ git commit -m "docs: update database, api, architecture per MLD design"
 # Phase 5: Cleanup
 git checkout main
 ```
+
+---
+
+## Sprint 2 — Task Branches
+
+Each Jira task gets its own feature branch from `develop`. Branches use the naming convention `feature/STG-XX-short-description`.
+
+### Branch List
+
+| Branch | Jira | Task | Status | Commit |
+|--------|------|------|--------|--------|
+| `feature/STG-74-prepare-sprint-2` | STG-74 | Create a branch named feature/prepare-sprint-2 | In Progress  | `chore(STG-74): initialize branch for sprint 2 preparation` |
+| `feature/STG-73-sprint-1-review` | STG-73 | Check Sprint 1 tasks & create LinkedIn post | To Do | `chore(STG-73): initialize branch for sprint 1 review` |
+| `feature/STG-47-ai-controller` | STG-47 | Backend: AiController | To Do | `feat(ai): initialize AiController for itinerary generation` |
+| `feature/STG-46-ai-itinerary-service` | STG-46 | Backend: AiItineraryService (Claude API Integration) | To Do | `feat(ai): initialize AiItineraryService with Claude API` |
+| `feature/STG-45-favorite-controller` | STG-45 | Backend: FavoriteController | To Do | `feat(favorites): initialize FavoriteController for CRUD operations` |
+| `feature/STG-44-review-controller` | STG-44 | Backend: ReviewController | To Do | `feat(reviews): initialize ReviewController for rating management` |
+| `feature/STG-43-review-service` | STG-43 | Backend: ReviewService + RatingCalculator | To Do | `feat(reviews): initialize ReviewService with rating calculation` |
+| `feature/STG-42-transport-booking-controller` | STG-42 | Backend: TransportBookingController | To Do | `feat(transport): initialize TransportBookingController` |
+| `feature/STG-41-transport-booking-service` | STG-41 | Backend: TransportBookingService (Business Logic) | To Do | `feat(transport): initialize TransportBookingService` |
+| `feature/STG-40-hotel-booking-controller` | STG-40 | Backend: HotelBookingController | To Do | `feat(hotel-booking): initialize HotelBookingController` |
+| `feature/STG-39-hotel-booking-service` | STG-39 | Backend: HotelBookingService (Business Logic) | To Do | `feat(hotel-booking): initialize HotelBookingService` |
+| `feature/STG-38-vehicle-controller` | STG-38 | Backend: VehicleController (CRUD under Driver) | To Do | `feat(vehicles): initialize VehicleController for driver vehicles` |
+| `feature/STG-37-driver-controller` | STG-37 | Backend: DriverController (CRUD + Verification) | To Do | `feat(drivers): initialize DriverController with verification` |
+| `feature/STG-36-room-controller` | STG-36 | Backend: RoomController (CRUD under Hotel) | To Do | `feat(rooms): initialize RoomController for hotel rooms` |
+| `feature/STG-35-hotel-controller` | STG-35 | Backend: HotelController (CRUD + Search) | To Do | `feat(hotels): initialize HotelController with search` |
+| `feature/STG-34-attraction-controller` | STG-34 | Backend: AttractionController (CRUD + Search + Filter) | To Do | `feat(attractions): initialize AttractionController with filters` |
+
+### Workflow
+
+```mermaid
+gitGraph
+    commit id: "init"
+    branch develop
+    checkout develop
+    commit id: "sprint 1 complete"
+    branch feature/STG-74-prepare-sprint-2
+    checkout feature/STG-74-prepare-sprint-2
+    commit id: "STG-74: prepare sprint 2"
+    checkout develop
+    merge feature/STG-74-prepare-sprint-2
+    branch feature/STG-47-ai-controller
+    checkout feature/STG-47-ai-controller
+    commit id: "STG-47: ai controller"
+    checkout develop
+    merge feature/STG-47-ai-controller
+    branch feature/STG-46-ai-itinerary-service
+    checkout feature/STG-46-ai-itinerary-service
+    commit id: "STG-46: ai itinerary service"
+    checkout develop
+    merge feature/STG-46-ai-itinerary-service
+    branch feature/STG-45-favorite-controller
+    checkout feature/STG-45-favorite-controller
+    commit id: "STG-45: favorite controller"
+    checkout develop
+    merge feature/STG-45-favorite-controller
+    branch feature/STG-44-review-controller
+    checkout feature/STG-44-review-controller
+    commit id: "STG-44: review controller"
+    checkout develop
+    merge feature/STG-44-review-controller
+    branch feature/STG-43-review-service
+    checkout feature/STG-43-review-service
+    commit id: "STG-43: review service"
+    checkout develop
+    merge feature/STG-43-review-service
+    branch feature/STG-42-transport-booking-controller
+    checkout feature/STG-42-transport-booking-controller
+    commit id: "STG-42: transport booking controller"
+    checkout develop
+    merge feature/STG-42-transport-booking-controller
+    branch feature/STG-41-transport-booking-service
+    checkout feature/STG-41-transport-booking-service
+    commit id: "STG-41: transport booking service"
+    checkout develop
+    merge feature/STG-41-transport-booking-service
+    branch feature/STG-40-hotel-booking-controller
+    checkout feature/STG-40-hotel-booking-controller
+    commit id: "STG-40: hotel booking controller"
+    checkout develop
+    merge feature/STG-40-hotel-booking-controller
+    branch feature/STG-39-hotel-booking-service
+    checkout feature/STG-39-hotel-booking-service
+    commit id: "STG-39: hotel booking service"
+    checkout develop
+    merge feature/STG-39-hotel-booking-service
+    branch feature/STG-38-vehicle-controller
+    checkout feature/STG-38-vehicle-controller
+    commit id: "STG-38: vehicle controller"
+    checkout develop
+    merge feature/STG-38-vehicle-controller
+    branch feature/STG-37-driver-controller
+    checkout feature/STG-37-driver-controller
+    commit id: "STG-37: driver controller"
+    checkout develop
+    merge feature/STG-37-driver-controller
+    branch feature/STG-36-room-controller
+    checkout feature/STG-36-room-controller
+    commit id: "STG-36: room controller"
+    checkout develop
+    merge feature/STG-36-room-controller
+    branch feature/STG-35-hotel-controller
+    checkout feature/STG-35-hotel-controller
+    commit id: "STG-35: hotel controller"
+    checkout develop
+    merge feature/STG-35-hotel-controller
+    branch feature/STG-34-attraction-controller
+    checkout feature/STG-34-attraction-controller
+    commit id: "STG-34: attraction controller"
+    checkout develop
+    merge feature/STG-34-attraction-controller
+    branch feature/STG-73-sprint-1-review
+    checkout feature/STG-73-sprint-1-review
+    commit id: "STG-73: sprint 1 review"
+    checkout develop
+    merge feature/STG-73-sprint-1-review
+```
+
+### Execution Commands
+
+```bash
+# Phase 1: Ensure develop is up to date
+git checkout develop
+git pull origin develop
+
+# Phase 2: Create branches for completed tasks (with actual commits)
+git checkout develop
+git checkout -b feature/STG-74-prepare-sprint-2
+git commit --allow-empty -m "chore(STG-74): initialize branch for sprint 2 preparation"
+
+# Phase 3: Create branches for To Do tasks (empty initialization commits)
+git checkout develop
+git checkout -b feature/STG-73-sprint-1-review
+git commit --allow-empty -m "chore(STG-73): initialize branch for sprint 1 review"
+
+git checkout develop
+git checkout -b feature/STG-47-ai-controller
+git commit --allow-empty -m "feat(ai): initialize AiController for itinerary generation"
+
+git checkout develop
+git checkout -b feature/STG-46-ai-itinerary-service
+git commit --allow-empty -m "feat(ai): initialize AiItineraryService with Claude API"
+
+git checkout develop
+git checkout -b feature/STG-45-favorite-controller
+git commit --allow-empty -m "feat(favorites): initialize FavoriteController for CRUD operations"
+
+git checkout develop
+git checkout -b feature/STG-44-review-controller
+git commit --allow-empty -m "feat(reviews): initialize ReviewController for rating management"
+
+git checkout develop
+git checkout -b feature/STG-43-review-service
+git commit --allow-empty -m "feat(reviews): initialize ReviewService with rating calculation"
+
+git checkout develop
+git checkout -b feature/STG-42-transport-booking-controller
+git commit --allow-empty -m "feat(transport): initialize TransportBookingController"
+
+git checkout develop
+git checkout -b feature/STG-41-transport-booking-service
+git commit --allow-empty -m "feat(transport): initialize TransportBookingService"
+
+git checkout develop
+git checkout -b feature/STG-40-hotel-booking-controller
+git commit --allow-empty -m "feat(hotel-booking): initialize HotelBookingController"
+
+git checkout develop
+git checkout -b feature/STG-39-hotel-booking-service
+git commit --allow-empty -m "feat(hotel-booking): initialize HotelBookingService"
+
+git checkout develop
+git checkout -b feature/STG-38-vehicle-controller
+git commit --allow-empty -m "feat(vehicles): initialize VehicleController for driver vehicles"
+
+git checkout develop
+git checkout -b feature/STG-37-driver-controller
+git commit --allow-empty -m "feat(drivers): initialize DriverController with verification"
+
+git checkout develop
+git checkout -b feature/STG-36-room-controller
+git commit --allow-empty -m "feat(rooms): initialize RoomController for hotel rooms"
+
+git checkout develop
+git checkout -b feature/STG-35-hotel-controller
+git commit --allow-empty -m "feat(hotels): initialize HotelController with search"
+
+git checkout develop
+git checkout -b feature/STG-34-attraction-controller
+git commit --allow-empty -m "feat(attractions): initialize AttractionController with filters"
+
+# Phase 4: Return to develop
+git checkout develop
+```
