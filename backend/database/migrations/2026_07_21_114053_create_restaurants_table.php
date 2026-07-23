@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('restaurants', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('city_id')->constrained('cities')->restrictOnDelete()->index();
+            $table->foreignId('city_id')->constrained('cities')->restrictOnDelete();
             $table->string('name', 150);
             $table->text('description')->nullable();
             $table->string('address', 255)->nullable();
