@@ -52,12 +52,19 @@ Route::prefix('v1')->group(function () {
 
         // Catalog routes
         Route::apiResource('cities', \App\Http\Controllers\CityController::class);
-        Route::apiResource('attractions', \App\Http\Controllers\AttractionController::class);
+        Route::apiResource('restaurants', \App\Http\Controllers\RestaurantController::class);
+
+        // Attraction routes with mixed access
+        Route::get('attractions', [\App\Http\Controllers\Api\V1\AttractionController::class, 'index']);
+        Route::get('attractions/{attraction}', [\App\Http\Controllers\Api\V1\AttractionController::class, 'show']);
+        Route::post('attractions', [\App\Http\Controllers\Api\V1\AttractionController::class, 'store'])->middleware('role:admin,hotel_manager');
+        Route::put('attractions/{attraction}', [\App\Http\Controllers\Api\V1\AttractionController::class, 'update']);
+        Route::delete('attractions/{attraction}', [\App\Http\Controllers\Api\V1\AttractionController::class, 'destroy']);
+
         Route::apiResource('hotels', \App\Http\Controllers\HotelController::class);
         Route::apiResource('rooms', \App\Http\Controllers\RoomController::class);
         Route::apiResource('drivers', \App\Http\Controllers\DriverController::class);
         Route::apiResource('vehicles', \App\Http\Controllers\VehicleController::class);
-        Route::apiResource('restaurants', \App\Http\Controllers\RestaurantController::class);
 
         // Booking routes
         Route::apiResource('hotel-bookings', \App\Http\Controllers\HotelBookingController::class);
