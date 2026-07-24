@@ -845,31 +845,43 @@ The core content catalog entity for tourism discovery. Each attraction belongs t
 | attraction_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
 | city_id | BIGINT UNSIGNED (FK) | No | — | References `cities.city_id` |
 | name | VARCHAR(150) | No | — | Attraction name |
+| slug | VARCHAR(150) | Yes | NULL | URL-friendly slug (unique) |
 | description | TEXT | Yes | NULL | Full description |
 | address | VARCHAR(255) | Yes | NULL | Physical address |
 | opening_hours | VARCHAR(100) | Yes | NULL | Human-readable opening hours |
+| created_by | BIGINT UNSIGNED (FK) | Yes | NULL | References `users.user_id` (creator) |
 | created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | Yes | NULL | Record update timestamp |
 
 ### Data Types
-`attraction_id`, `city_id`: `bigIncrements` · `name`, `address`, `opening_hours`: `string` · `description`: `text` · timestamps: `timestamp`
+`attraction_id`, `city_id`: `bigIncrements` · `name`, `slug`, `address`, `opening_hours`: `string` · `description`: `text` · `created_by`: `bigInteger` · timestamps: `timestamp`
 
 ### Relationships
 - `attractions` **belongsTo** `cities`
+- `attractions` **belongsTo** `users` (via `created_by`)
 - `attractions` **hasMany** `reviews`
 - `attractions` **hasMany** `favorites`
 
 ### Business Rules
 - Every attraction must belong to a valid city.
+- An attraction can be created by a user (tracked via `created_by`).
 - An attraction cannot be deleted if it has associated reviews or favorites (restrict on delete).
+- Only the creator or an administrator can update or delete an attraction.
 
 ### Laravel Relationships
 ```php
 class Attraction extends Model
 {
+    use SoftDeletes;
+
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function reviews(): HasMany
@@ -887,15 +899,19 @@ class Attraction extends Model
 ### Validation Rules
 ```php
 'city_id'        => 'required|exists:cities,id',
-'name'           => 'required|string|max:150',
+'name'           => 'required|string|max:150|unique:attractions,name',
+'slug'           => 'nullable|string|max:150|unique:attractions,slug',
 'description'    => 'nullable|string',
 'address'        => 'nullable|string|max:255',
 'opening_hours'  => 'nullable|string|max:100',
+'created_by'     => 'nullable|exists:users,id',
 ```
 
 ### Indexes
 - PRIMARY KEY (`attraction_id`)
+- UNIQUE INDEX `attractions_slug_unique` (`slug`)
 - INDEX `attractions_city_id_index` (`city_id`)
+- INDEX `attractions_created_by_index` (`created_by`)
 
 ### Example Record
 ```json
@@ -903,9 +919,11 @@ class Attraction extends Model
   "attraction_id": 8,
   "city_id": 1,
   "name": "Jardin Majorelle",
+  "slug": "jardin-majorelle",
   "description": "A botanical garden and artist's landscape garden in Marrakech.",
   "address": "Rue Yves Saint Laurent, Marrakech",
   "opening_hours": "08:00 - 18:00",
+  "created_by": 5,
   "created_at": "2026-01-06T11:00:00Z",
   "updated_at": "2026-02-10T09:00:00Z"
 }
