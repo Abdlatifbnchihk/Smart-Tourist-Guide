@@ -27,10 +27,10 @@ class RegisterUserRequest extends FormRequest
             'email' => 'required|email|max:150|unique:users,email',
             'phone' => 'required|string|max:20|unique:users,phone',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:Tourist,Driver,Hotel Manager,Administrator',
+            'role' => 'required|in:tourist,driver,hotel_manager,administrator',
         ];
 
-        if ($this->input('role') === 'Driver') {
+        if ($this->input('role') === 'driver') {
             $rules['city_id'] = 'required|exists:cities,city_id';
             $rules['license_number'] = 'required|string|max:100|unique:drivers,license_number';
         }

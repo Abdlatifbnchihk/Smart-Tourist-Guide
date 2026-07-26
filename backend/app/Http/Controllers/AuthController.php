@@ -30,7 +30,7 @@ class AuthController extends Controller
             'active' => true,
         ]);
 
-        if ($request->role === 'Driver') {
+        if ($request->role === 'driver') {
             Driver::create([
                 'user_id' => $user->user_id,
                 'first_name' => $request->first_name,

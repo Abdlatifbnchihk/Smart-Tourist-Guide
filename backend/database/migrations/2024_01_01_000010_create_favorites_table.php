@@ -19,7 +19,6 @@ return new class extends Migration
             $table->foreignId('attraction_id')->nullable()->constrained('attractions')->cascadeOnDelete()->index();
             $table->timestamps();
 
-            $table->check('CHECK (hotel_id IS NOT NULL OR restaurant_id IS NOT NULL OR attraction_id IS NOT NULL)');
             $table->unique(['user_id', 'hotel_id'], 'favorites_user_hotel_unique');
             $table->unique(['user_id', 'restaurant_id'], 'favorites_user_restaurant_unique');
             $table->unique(['user_id', 'attraction_id'], 'favorites_user_attraction_unique');

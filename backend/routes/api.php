@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AttractionController;
+use App\Http\Controllers\Api\V1\HotelController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -55,13 +57,18 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('restaurants', \App\Http\Controllers\RestaurantController::class);
 
         // Attraction routes with mixed access
-        Route::get('attractions', [\App\Http\Controllers\Api\V1\AttractionController::class, 'index']);
-        Route::get('attractions/{attraction}', [\App\Http\Controllers\Api\V1\AttractionController::class, 'show']);
-        Route::post('attractions', [\App\Http\Controllers\Api\V1\AttractionController::class, 'store'])->middleware('role:admin,hotel_manager');
-        Route::put('attractions/{attraction}', [\App\Http\Controllers\Api\V1\AttractionController::class, 'update']);
-        Route::delete('attractions/{attraction}', [\App\Http\Controllers\Api\V1\AttractionController::class, 'destroy']);
+        Route::get('attractions', [AttractionController::class, 'index']);
+        Route::get('attractions/{attraction}', [AttractionController::class, 'show']);
+        Route::post('attractions', [AttractionController::class, 'store'])->middleware('role:admin,hotel_manager');
+        Route::put('attractions/{attraction}', [AttractionController::class, 'update']);
+        Route::delete('attractions/{attraction}', [AttractionController::class, 'destroy']);
 
-        Route::apiResource('hotels', \App\Http\Controllers\HotelController::class);
+        // Hotel routes with mixed access
+        Route::get('hotels', [HotelController::class, 'index']);
+        Route::get('hotels/{hotel}', [HotelController::class, 'show']);
+        Route::post('hotels', [HotelController::class, 'store'])->middleware('role:hotel_manager');
+        Route::put('hotels/{hotel}', [HotelController::class, 'update']);
+        Route::delete('hotels/{hotel}', [HotelController::class, 'destroy']);
         Route::apiResource('rooms', \App\Http\Controllers\RoomController::class);
         Route::apiResource('drivers', \App\Http\Controllers\DriverController::class);
         Route::apiResource('vehicles', \App\Http\Controllers\VehicleController::class);
