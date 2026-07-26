@@ -12,12 +12,14 @@ class RoomResource extends JsonResource
         return [
             'id' => $this->id,
             'hotel_id' => $this->hotel_id,
-            'room_type' => $this->room_type,
-            'price' => $this->price,
+            'number' => $this->number,
+            'type' => $this->type,
             'capacity' => $this->capacity,
-            'is_available' => $this->is_available,
+            'price_per_night' => $this->price_per_night,
+            'available' => $this->available,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'hotel' => new HotelResource($this->whenLoaded('hotel')),
         ];
     }
 }
