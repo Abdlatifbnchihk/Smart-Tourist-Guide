@@ -20,6 +20,7 @@ class Driver extends Model
         'years_of_experience',
         'languages',
         'available',
+        'is_verified',
     ];
 
     /**
@@ -29,6 +30,7 @@ class Driver extends Model
      */
     protected $casts = [
         'available' => 'boolean',
+        'is_verified' => 'boolean',
     ];
 
     public function user(): BelongsTo
@@ -49,5 +51,10 @@ class Driver extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'driver_id');
     }
 }
