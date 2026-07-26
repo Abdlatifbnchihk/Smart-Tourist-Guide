@@ -108,7 +108,7 @@ class AttractionController extends Controller
     public function update(UpdateAttractionRequest $request, Attraction $attraction): JsonResponse
     {
         // Check ownership or admin role
-        if ($request->user()->id !== $attraction->created_by && $request->user()->role !== 'Administrator') {
+        if ($request->user()->id !== $attraction->created_by && $request->user()->role !== 'administrator') {
             return response()->json([
                 'message' => 'You are not authorized to update this attraction',
             ], Response::HTTP_FORBIDDEN);
@@ -143,7 +143,7 @@ class AttractionController extends Controller
     public function destroy(Attraction $attraction, Request $request): JsonResponse
     {
         // Check ownership or admin role
-        if ($request->user()->id !== $attraction->created_by && $request->user()->role !== 'Administrator') {
+        if ($request->user()->id !== $attraction->created_by && $request->user()->role !== 'administrator') {
             return response()->json([
                 'message' => 'You are not authorized to delete this attraction',
             ], Response::HTTP_FORBIDDEN);

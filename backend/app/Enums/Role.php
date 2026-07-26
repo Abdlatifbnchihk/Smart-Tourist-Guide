@@ -4,10 +4,10 @@ namespace App\Enums;
 
 enum Role: string
 {
-    case Tourist = 'Tourist';
-    case Driver = 'Driver';
-    case HotelManager = 'Hotel Manager';
-    case Administrator = 'Administrator';
+    case Tourist = 'tourist';
+    case Driver = 'driver';
+    case HotelManager = 'hotel_manager';
+    case Administrator = 'administrator';
 
     /**
      * Get the label for the role.

@@ -20,9 +20,6 @@ return new class extends Migration
             $table->tinyInteger('rating')->unsigned();
             $table->text('comment')->nullable();
             $table->timestamps();
-
-            $table->check('CHECK (hotel_id IS NOT NULL OR driver_id IS NOT NULL OR attraction_id IS NOT NULL)');
-            $table->check('CHECK (rating >= 1 AND rating <= 5)');
         });
     }
 

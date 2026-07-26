@@ -47,7 +47,7 @@ enum TokenAbility: string
     public static function forRole(string $role): array
     {
         return match ($role) {
-            'Tourist' => [
+            'tourist' => [
                 self::VIEW_ATTRACTIONS,
                 self::VIEW_HOTELS,
                 self::BOOK_HOTELS,
@@ -59,7 +59,7 @@ enum TokenAbility: string
                 self::VIEW_PROFILE,
                 self::EDIT_PROFILE,
             ],
-            'Driver' => [
+            'driver' => [
                 self::MANAGE_VEHICLE,
                 self::VIEW_TRANSPORT_BOOKINGS,
                 self::UPDATE_BOOKING_STATUS,
@@ -67,7 +67,7 @@ enum TokenAbility: string
                 self::VIEW_PROFILE,
                 self::EDIT_PROFILE,
             ],
-            'Hotel Manager' => [
+            'hotel_manager' => [
                 self::MANAGE_HOTEL,
                 self::MANAGE_ROOMS,
                 self::VIEW_HOTEL_BOOKINGS,
@@ -75,7 +75,7 @@ enum TokenAbility: string
                 self::VIEW_PROFILE,
                 self::EDIT_PROFILE,
             ],
-            'Administrator' => [
+            'administrator' => [
                 self::MANAGE_USERS,
                 self::APPROVE_USERS,
                 self::SUSPEND_USERS,
