@@ -79,7 +79,8 @@ Route::prefix('v1')->group(function () {
         Route::put('rooms/{id}/restore', [\App\Http\Controllers\RoomController::class, 'restore']);
         Route::delete('rooms/{id}/force', [\App\Http\Controllers\RoomController::class, 'forceDestroy']);
 
-        Route::apiResource('drivers', \App\Http\Controllers\DriverController::class);
+        Route::apiResource('drivers', \App\Http\Controllers\DriverController::class)->except('destroy');
+        Route::patch('drivers/{id}/verify', [\App\Http\Controllers\DriverController::class, 'verify'])->middleware('role:administrator');
         Route::apiResource('vehicles', \App\Http\Controllers\VehicleController::class);
 
         // Booking routes
