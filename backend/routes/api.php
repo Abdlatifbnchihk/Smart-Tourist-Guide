@@ -69,7 +69,16 @@ Route::prefix('v1')->group(function () {
         Route::post('hotels', [HotelController::class, 'store'])->middleware('role:hotel_manager');
         Route::put('hotels/{hotel}', [HotelController::class, 'update']);
         Route::delete('hotels/{hotel}', [HotelController::class, 'destroy']);
-        Route::apiResource('rooms', \App\Http\Controllers\RoomController::class);
+
+        // Room routes (nested under hotels for create/list, standalone for show/update/delete)
+        Route::get('hotels/{hotelId}/rooms', [\App\Http\Controllers\RoomController::class, 'index']);
+        Route::post('hotels/{hotelId}/rooms', [\App\Http\Controllers\RoomController::class, 'store'])->middleware('role:hotel_manager');
+        Route::get('rooms/{id}', [\App\Http\Controllers\RoomController::class, 'show']);
+        Route::put('rooms/{id}', [\App\Http\Controllers\RoomController::class, 'update']);
+        Route::delete('rooms/{id}', [\App\Http\Controllers\RoomController::class, 'destroy']);
+        Route::put('rooms/{id}/restore', [\App\Http\Controllers\RoomController::class, 'restore']);
+        Route::delete('rooms/{id}/force', [\App\Http\Controllers\RoomController::class, 'forceDestroy']);
+
         Route::apiResource('drivers', \App\Http\Controllers\DriverController::class);
         Route::apiResource('vehicles', \App\Http\Controllers\VehicleController::class);
 
