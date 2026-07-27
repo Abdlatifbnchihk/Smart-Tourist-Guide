@@ -81,7 +81,13 @@ Route::prefix('v1')->group(function () {
 
         Route::apiResource('drivers', \App\Http\Controllers\DriverController::class)->except('destroy');
         Route::patch('drivers/{id}/verify', [\App\Http\Controllers\DriverController::class, 'verify'])->middleware('role:administrator');
-        Route::apiResource('vehicles', \App\Http\Controllers\VehicleController::class);
+
+        // Vehicle routes (nested under drivers for create/list, standalone for show/update/delete)
+        Route::get('drivers/{driverId}/vehicles', [\App\Http\Controllers\VehicleController::class, 'index']);
+        Route::post('drivers/{driverId}/vehicles', [\App\Http\Controllers\VehicleController::class, 'store'])->middleware('role:driver');
+        Route::get('vehicles/{id}', [\App\Http\Controllers\VehicleController::class, 'show']);
+        Route::put('vehicles/{id}', [\App\Http\Controllers\VehicleController::class, 'update']);
+        Route::delete('vehicles/{id}', [\App\Http\Controllers\VehicleController::class, 'destroy']);
 
         // Booking routes
         Route::apiResource('hotel-bookings', \App\Http\Controllers\HotelBookingController::class);
