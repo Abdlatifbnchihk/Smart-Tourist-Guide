@@ -21,6 +21,7 @@ class Vehicle extends Model
         'seats',
         'registration_number',
         'air_conditioning',
+        'price_per_km',
     ];
 
     /**
@@ -45,6 +46,7 @@ class Vehicle extends Model
     protected $casts = [
         'seats' => 'integer',
         'air_conditioning' => 'boolean',
+        'price_per_km' => 'decimal:2',
     ];
 
     public function driver(): BelongsTo
