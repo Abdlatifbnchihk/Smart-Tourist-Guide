@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,7 +11,7 @@ use Illuminate\Validation\Rule;
 
 class Room extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory;
     /**
      * The primary key associated with the table.
      *
@@ -29,6 +30,7 @@ class Room extends Model
         'type',
         'capacity',
         'price_per_night',
+        'quantity_available',
         'available',
     ];
 
@@ -39,6 +41,7 @@ class Room extends Model
      */
     protected $casts = [
         'capacity' => 'integer',
+        'quantity_available' => 'integer',
         'price_per_night' => 'decimal:2',
         'available' => 'boolean',
     ];
@@ -73,6 +76,6 @@ class Room extends Model
      */
     public function bookings(): HasMany
     {
-        return $this->hasMany(Booking::class);
+        return $this->hasMany(Booking::class, 'room_id');
     }
 }
