@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('email', 150)->unique();
             $table->string('phone', 20)->unique();
             $table->string('password');
-            $table->enum('role', ['Tourist', 'Driver', 'Hotel Manager', 'Administrator']);
-            $table->enum('status', ['Pending', 'Approved', 'Rejected', 'Suspended'])->default('Pending');
+            $table->string('role', 50)->default('Tourist');
+            $table->string('status', 50)->default('Pending');
             $table->boolean('active')->default(true);
             $table->rememberToken();
             $table->timestamps();
