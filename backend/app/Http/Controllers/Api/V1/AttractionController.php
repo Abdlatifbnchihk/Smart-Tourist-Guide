@@ -49,7 +49,7 @@ class AttractionController extends Controller
 
         // Search by name
         if ($request->has('search')) {
-            $query->where('name', 'LIKE', '%' . $request->search . '%');
+            $query->where('name', 'LIKE', '%'.$request->search.'%');
         }
 
         // Eager load city relationship
@@ -75,9 +75,9 @@ class AttractionController extends Controller
         // Ensure slug uniqueness
         $originalSlug = $validated['slug'];
         $counter = 1;
-        
+
         while (Attraction::where('slug', $validated['slug'])->exists()) {
-            $validated['slug'] = $originalSlug . '-' . $counter;
+            $validated['slug'] = $originalSlug.'-'.$counter;
             $counter++;
         }
 
@@ -124,7 +124,7 @@ class AttractionController extends Controller
             $originalSlug = $validated['slug'];
             $counter = 1;
             while (Attraction::where('slug', $validated['slug'])->where('id', '!=', $attraction->id)->exists()) {
-                $validated['slug'] = $originalSlug . '-' . $counter;
+                $validated['slug'] = $originalSlug.'-'.$counter;
                 $counter++;
             }
         }

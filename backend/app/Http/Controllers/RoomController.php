@@ -23,7 +23,7 @@ class RoomController extends Controller
         $query = $hotel->rooms();
 
         if ($request->has('type')) {
-            $query->where('type', 'LIKE', '%' . $request->type . '%');
+            $query->where('type', 'LIKE', '%'.$request->type.'%');
         }
 
         if ($request->has('available')) {

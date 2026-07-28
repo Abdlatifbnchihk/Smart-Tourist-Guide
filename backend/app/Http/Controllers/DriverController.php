@@ -104,7 +104,7 @@ class DriverController extends Controller
         $driver = Driver::findOrFail($id);
 
         $driver->update([
-            'is_verified' => !$driver->is_verified,
+            'is_verified' => ! $driver->is_verified,
         ]);
 
         return response()->json([

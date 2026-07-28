@@ -26,7 +26,7 @@ trait HasTokenAbilities
     {
         $user = $this->user ?? auth()->user();
 
-        if (!$user || !$user->currentAccessToken()) {
+        if (! $user || ! $user->currentAccessToken()) {
             return false;
         }
 
@@ -40,7 +40,7 @@ trait HasTokenAbilities
     {
         $user = $this->user ?? auth()->user();
 
-        if (!$user || !$user->currentAccessToken()) {
+        if (! $user || ! $user->currentAccessToken()) {
             return false;
         }
 
@@ -54,7 +54,7 @@ trait HasTokenAbilities
     {
         $user = $this->user ?? auth()->user();
 
-        if (!$user || !$user->currentAccessToken()) {
+        if (! $user || ! $user->currentAccessToken()) {
             return false;
         }
 
@@ -66,7 +66,7 @@ trait HasTokenAbilities
      */
     public function requireAbility(string $ability): JsonResponse|true
     {
-        if (!$this->tokenCan($ability)) {
+        if (! $this->tokenCan($ability)) {
             return response()->json([
                 'message' => 'Unauthorized. Token lacks required ability.',
                 'required_ability' => $ability,
@@ -81,7 +81,7 @@ trait HasTokenAbilities
      */
     public function requireAnyAbility(array $abilities): JsonResponse|true
     {
-        if (!$this->tokenCanAny($abilities)) {
+        if (! $this->tokenCanAny($abilities)) {
             return response()->json([
                 'message' => 'Unauthorized. Token lacks required abilities.',
                 'required_abilities' => $abilities,

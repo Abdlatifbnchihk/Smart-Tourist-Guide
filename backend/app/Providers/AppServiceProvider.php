@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Attraction;
+use App\Models\Driver;
+use App\Models\Hotel;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,10 +25,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Relation::enforceMorphMap([
-            'user' => \App\Models\User::class,
-            'attraction' => \App\Models\Attraction::class,
-            'hotel' => \App\Models\Hotel::class,
-            'driver' => \App\Models\Driver::class,
+            'user' => User::class,
+            'attraction' => Attraction::class,
+            'hotel' => Hotel::class,
+            'driver' => Driver::class,
         ]);
     }
 }

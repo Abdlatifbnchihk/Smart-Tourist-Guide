@@ -5,14 +5,15 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class LoginUserRequest extends FormRequest
+class StoreHotelBookingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        // Only tourists can create bookings
+        return $this->user()->role === 'tourist';
     }
 
     /**
@@ -23,8 +24,9 @@ class LoginUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
-            'password' => 'required',
+            'room_id' => 'required|exists:rooms,room_id',
+            'start_date' => 'required|date|after:today',
+            'end_date' => 'required|date|after:start_date',
         ];
     }
 }

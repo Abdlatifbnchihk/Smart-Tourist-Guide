@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\Room;
-use App\Enums\BookingStatus;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -12,7 +12,7 @@ use RuntimeException;
 class HotelBookingService
 {
     private const VALID_TRANSITIONS = [
-        'Pending'   => ['Confirmed', 'Cancelled'],
+        'Pending' => ['Confirmed', 'Cancelled'],
         'Confirmed' => ['Completed', 'Cancelled'],
         'Completed' => [],
         'Cancelled' => [],
@@ -36,16 +36,16 @@ class HotelBookingService
 
         return DB::transaction(function () use ($data, $room, $totalPrice) {
             return Booking::create([
-                'user_id'        => $data['user_id'],
-                'room_id'        => $room->room_id,
-                'driver_id'      => $data['driver_id'] ?? null,
+                'user_id' => $data['user_id'],
+                'room_id' => $room->room_id,
+                'driver_id' => $data['driver_id'] ?? null,
                 'booking_number' => $this->generateBookingNumber(),
-                'booking_type'   => $data['booking_type'] ?? 'Hotel',
-                'booking_date'   => Carbon::now()->toDateString(),
-                'start_date'     => $data['start_date'],
-                'end_date'       => $data['end_date'],
-                'total_price'    => $totalPrice,
-                'status'         => BookingStatus::Pending,
+                'booking_type' => $data['booking_type'] ?? 'Hotel',
+                'booking_date' => Carbon::now()->toDateString(),
+                'start_date' => $data['start_date'],
+                'end_date' => $data['end_date'],
+                'total_price' => $totalPrice,
+                'status' => BookingStatus::Pending,
             ]);
         });
     }
@@ -53,18 +53,21 @@ class HotelBookingService
     public function confirm(Booking $booking): Booking
     {
         $this->transition($booking, BookingStatus::Confirmed);
+
         return $booking;
     }
 
     public function complete(Booking $booking): Booking
     {
         $this->transition($booking, BookingStatus::Completed);
+
         return $booking;
     }
 
     public function cancel(Booking $booking): Booking
     {
         $this->transition($booking, BookingStatus::Cancelled);
+
         return $booking;
     }
 
@@ -77,7 +80,7 @@ class HotelBookingService
 
         $allowed = self::VALID_TRANSITIONS[$fromStatus] ?? [];
 
-        if (!in_array($toValue, $allowed)) {
+        if (! in_array($toValue, $allowed)) {
             throw new RuntimeException(
                 "Cannot transition from {$fromStatus} to {$toValue}"
             );
@@ -104,6 +107,6 @@ class HotelBookingService
 
     private function generateBookingNumber(): string
     {
-        return 'BK' . strtoupper(uniqid());
+        return 'BK'.strtoupper(uniqid());
     }
 }

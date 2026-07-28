@@ -19,7 +19,7 @@ class BookingFactory extends Factory
         return [
             'user_id' => User::factory(),
             'room_id' => Room::factory(),
-            'booking_number' => 'BK' . strtoupper(uniqid()),
+            'booking_number' => 'BK'.strtoupper(uniqid()),
             'booking_type' => 'Hotel',
             'booking_date' => now()->toDateString(),
             'start_date' => $startDate->format('Y-m-d'),
