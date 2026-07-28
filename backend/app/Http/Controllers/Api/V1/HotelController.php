@@ -44,7 +44,7 @@ class HotelController extends Controller
 
         // Search by name
         if ($request->has('search')) {
-            $query->where('name', 'LIKE', '%' . $request->search . '%');
+            $query->where('name', 'LIKE', '%'.$request->search.'%');
         }
 
         // Eager load city relationship

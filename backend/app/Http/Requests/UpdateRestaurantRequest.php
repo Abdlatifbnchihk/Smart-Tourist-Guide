@@ -17,7 +17,7 @@ class UpdateRestaurantRequest extends FormRequest
 
         return [
             'city_id' => 'required|exists:cities,city_id',
-            'name' => 'required|string|max:150|unique:restaurants,name,' . $restaurantId . ',id',
+            'name' => 'required|string|max:150|unique:restaurants,name,'.$restaurantId.',id',
             'description' => 'nullable|string',
             'address' => 'nullable|string|max:255',
             'cuisine' => 'required|string|max:100',

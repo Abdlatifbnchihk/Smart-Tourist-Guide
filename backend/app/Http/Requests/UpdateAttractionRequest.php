@@ -17,7 +17,7 @@ class UpdateAttractionRequest extends FormRequest
 
         return [
             'city_id' => 'required|exists:cities,city_id',
-            'name' => 'required|string|max:150|unique:attractions,name,' . $attractionId . ',id',
+            'name' => 'required|string|max:150|unique:attractions,name,'.$attractionId.',id',
             'description' => 'nullable|string',
             'address' => 'nullable|string|max:255',
             'opening_hours' => 'nullable|string|max:100',

@@ -1,8 +1,21 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\AiController;
 use App\Http\Controllers\Api\V1\AttractionController;
+use App\Http\Controllers\Api\V1\HotelBookingController;
 use App\Http\Controllers\Api\V1\HotelController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CityController;
+use App\Http\Controllers\Driver\BookingController;
+use App\Http\Controllers\DriverController;
+use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\RestaurantController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\RoomController;
+use App\Http\Controllers\TransportBookingController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -48,13 +61,13 @@ Route::prefix('v1')->group(function () {
 
         // Admin routes
         Route::middleware('role:admin')->prefix('admin')->group(function () {
-            Route::apiResource('users', \App\Http\Controllers\Admin\AdminController::class);
-            Route::apiResource('roles', \App\Http\Controllers\Admin\RoleController::class);
+            Route::apiResource('users', AdminController::class);
+            Route::apiResource('roles', RoleController::class);
         });
 
         // Catalog routes
-        Route::apiResource('cities', \App\Http\Controllers\CityController::class);
-        Route::apiResource('restaurants', \App\Http\Controllers\RestaurantController::class);
+        Route::apiResource('cities', CityController::class);
+        Route::apiResource('restaurants', RestaurantController::class);
 
         // Attraction routes with mixed access
         Route::get('attractions', [AttractionController::class, 'index']);
@@ -71,48 +84,50 @@ Route::prefix('v1')->group(function () {
         Route::delete('hotels/{hotel}', [HotelController::class, 'destroy']);
 
         // Room routes (nested under hotels for create/list, standalone for show/update/delete)
-        Route::get('hotels/{hotelId}/rooms', [\App\Http\Controllers\RoomController::class, 'index']);
-        Route::post('hotels/{hotelId}/rooms', [\App\Http\Controllers\RoomController::class, 'store'])->middleware('role:hotel_manager');
-        Route::get('rooms/{id}', [\App\Http\Controllers\RoomController::class, 'show']);
-        Route::put('rooms/{id}', [\App\Http\Controllers\RoomController::class, 'update']);
-        Route::delete('rooms/{id}', [\App\Http\Controllers\RoomController::class, 'destroy']);
-        Route::put('rooms/{id}/restore', [\App\Http\Controllers\RoomController::class, 'restore']);
-        Route::delete('rooms/{id}/force', [\App\Http\Controllers\RoomController::class, 'forceDestroy']);
+        Route::get('hotels/{hotelId}/rooms', [RoomController::class, 'index']);
+        Route::post('hotels/{hotelId}/rooms', [RoomController::class, 'store'])->middleware('role:hotel_manager');
+        Route::get('rooms/{id}', [RoomController::class, 'show']);
+        Route::put('rooms/{id}', [RoomController::class, 'update']);
+        Route::delete('rooms/{id}', [RoomController::class, 'destroy']);
+        Route::put('rooms/{id}/restore', [RoomController::class, 'restore']);
+        Route::delete('rooms/{id}/force', [RoomController::class, 'forceDestroy']);
 
-        Route::apiResource('drivers', \App\Http\Controllers\DriverController::class)->except('destroy');
-        Route::patch('drivers/{id}/verify', [\App\Http\Controllers\DriverController::class, 'verify'])->middleware('role:administrator');
+        Route::apiResource('drivers', DriverController::class)->except('destroy');
+        Route::patch('drivers/{id}/verify', [DriverController::class, 'verify'])->middleware('role:administrator');
 
         // Vehicle routes (nested under drivers for create/list, standalone for show/update/delete)
-        Route::get('drivers/{driverId}/vehicles', [\App\Http\Controllers\VehicleController::class, 'index']);
-        Route::post('drivers/{driverId}/vehicles', [\App\Http\Controllers\VehicleController::class, 'store'])->middleware('role:driver');
-        Route::get('vehicles/{id}', [\App\Http\Controllers\VehicleController::class, 'show']);
-        Route::put('vehicles/{id}', [\App\Http\Controllers\VehicleController::class, 'update']);
-        Route::delete('vehicles/{id}', [\App\Http\Controllers\VehicleController::class, 'destroy']);
+        Route::get('drivers/{driverId}/vehicles', [VehicleController::class, 'index']);
+        Route::post('drivers/{driverId}/vehicles', [VehicleController::class, 'store'])->middleware('role:driver');
+        Route::get('vehicles/{id}', [VehicleController::class, 'show']);
+        Route::put('vehicles/{id}', [VehicleController::class, 'update']);
+        Route::delete('vehicles/{id}', [VehicleController::class, 'destroy']);
 
         // Booking routes
-        Route::apiResource('hotel-bookings', \App\Http\Controllers\HotelBookingController::class);
-        Route::apiResource('transport-bookings', \App\Http\Controllers\TransportBookingController::class);
+        Route::apiResource('hotel-bookings', HotelBookingController::class)->parameters(['hotel-bookings' => 'booking']);
+        Route::patch('hotel-bookings/{booking}/cancel', [HotelBookingController::class, 'cancel']);
+        Route::patch('hotel-bookings/{booking}/status', [HotelBookingController::class, 'status']);
+        Route::apiResource('transport-bookings', TransportBookingController::class);
 
         // Review routes
-        Route::apiResource('reviews', \App\Http\Controllers\ReviewController::class);
+        Route::apiResource('reviews', ReviewController::class);
 
         // Favorite routes
-        Route::get('/favorites', [\App\Http\Controllers\FavoriteController::class, 'index']);
-        Route::post('/favorites/toggle', [\App\Http\Controllers\FavoriteController::class, 'toggle']);
+        Route::get('/favorites', [FavoriteController::class, 'index']);
+        Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']);
 
         // Hotel Manager routes
         Route::middleware('role:hotel_manager')->prefix('hotel-manager')->group(function () {
-            Route::apiResource('manage-hotel', \App\Http\Controllers\HotelManager\HotelController::class);
-            Route::apiResource('manage-rooms', \App\Http\Controllers\HotelManager\RoomController::class);
+            Route::apiResource('manage-hotel', App\Http\Controllers\HotelManager\HotelController::class);
+            Route::apiResource('manage-rooms', App\Http\Controllers\HotelManager\RoomController::class);
         });
 
         // Driver routes
         Route::middleware('role:driver')->prefix('driver')->group(function () {
-            Route::apiResource('manage-vehicle', \App\Http\Controllers\Driver\VehicleController::class);
-            Route::apiResource('transport-bookings', \App\Http\Controllers\Driver\BookingController::class)->only(['index', 'show', 'update']);
+            Route::apiResource('manage-vehicle', App\Http\Controllers\Driver\VehicleController::class);
+            Route::apiResource('transport-bookings', BookingController::class)->only(['index', 'show', 'update']);
         });
 
         // AI routes
-        Route::post('/ai/itinerary', [\App\Http\Controllers\AiController::class, 'generateItinerary']);
+        Route::post('/ai/itinerary', [AiController::class, 'generateItinerary']);
     });
 });
