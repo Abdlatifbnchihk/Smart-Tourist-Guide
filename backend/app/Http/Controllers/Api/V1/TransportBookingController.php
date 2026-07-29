@@ -18,6 +18,32 @@ class TransportBookingController extends Controller
     ) {}
 
     /**
+     * Display a listing of transport bookings.
+     */
+    public function index(Request $request)
+    {
+        $user = $request->user();
+        $query = Booking::query();
+
+        if ($user->role === 'tourist') {
+            $query->where('user_id', $user->id);
+        } elseif ($user->role === 'driver') {
+            $query->whereHas('driver', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        } else {
+            $query->whereRaw('0 = 1');
+        }
+
+        $query->with(['user', 'driver', 'room.hotel']);
+
+        $perPage = $request->get('per_page', 15);
+        $bookings = $query->paginate($perPage);
+
+        return TransportBookingResource::collection($bookings);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreTransportBookingRequest $request): JsonResponse
