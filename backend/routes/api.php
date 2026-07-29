@@ -14,7 +14,7 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\RoomController;
-use App\Http\Controllers\TransportBookingController;
+use App\Http\Controllers\Api\V1\TransportBookingController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
@@ -106,7 +106,12 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('hotel-bookings', HotelBookingController::class)->parameters(['hotel-bookings' => 'booking']);
         Route::patch('hotel-bookings/{booking}/cancel', [HotelBookingController::class, 'cancel']);
         Route::patch('hotel-bookings/{booking}/status', [HotelBookingController::class, 'status']);
-        Route::apiResource('transport-bookings', TransportBookingController::class);
+
+        // Transport booking routes
+        Route::post('transport-bookings', [TransportBookingController::class, 'store']);
+        Route::get('transport-bookings/{booking}', [TransportBookingController::class, 'show']);
+        Route::patch('transport-bookings/{booking}/cancel', [TransportBookingController::class, 'cancel']);
+        Route::patch('transport-bookings/{booking}/status', [TransportBookingController::class, 'status']);
 
         // Review routes
         Route::apiResource('reviews', ReviewController::class);
