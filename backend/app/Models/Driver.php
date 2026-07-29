@@ -21,6 +21,7 @@ class Driver extends Model
         'languages',
         'available',
         'is_verified',
+        'rating',
     ];
 
     /**
@@ -31,6 +32,7 @@ class Driver extends Model
     protected $casts = [
         'available' => 'boolean',
         'is_verified' => 'boolean',
+        'rating' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
