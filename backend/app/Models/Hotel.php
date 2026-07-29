@@ -26,6 +26,7 @@ class Hotel extends Model
         'description',
         'stars',
         'created_by',
+        'average_rating',
     ];
 
     /**
@@ -35,6 +36,7 @@ class Hotel extends Model
      */
     protected $casts = [
         'stars' => 'integer',
+        'average_rating' => 'decimal:2',
     ];
 
     public function city(): BelongsTo

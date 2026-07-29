@@ -24,6 +24,11 @@ class Attraction extends Model
         'address',
         'opening_hours',
         'created_by',
+        'average_rating',
+    ];
+
+    protected $casts = [
+        'average_rating' => 'decimal:2',
     ];
 
     public function city(): BelongsTo
