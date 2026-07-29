@@ -450,4 +450,68 @@ class TransportBookingControllerTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_tourist_can_list_own_transport_bookings(): void
+    {
+        Sanctum::actingAs(User::find($this->touristId));
+
+        $response = $this->getJson('/api/v1/transport-bookings');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $this->bookingId);
+    }
+
+    public function test_driver_can_list_assigned_transport_bookings(): void
+    {
+        $driverUserId = DB::table('drivers')->where('id', $this->driverId)->value('user_id');
+        $driverUser = User::find($driverUserId);
+        Sanctum::actingAs($driverUser);
+
+        $response = $this->getJson('/api/v1/transport-bookings');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $this->bookingId);
+    }
+
+    public function test_unauthorized_role_sees_empty_list(): void
+    {
+        // Create a hotel_manager user
+        $hotelManagerId = DB::table('users')->insertGetId([
+            'first_name' => 'Hotel',
+            'last_name' => 'Manager',
+            'email' => 'manager@test.com',
+            'phone' => '7777777777',
+            'password' => bcrypt('password'),
+            'role' => 'hotel_manager',
+            'status' => 'Approved',
+            'active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs(User::find($hotelManagerId));
+
+        $response = $this->getJson('/api/v1/transport-bookings');
+
+        $response->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    public function test_index_returns_paginated_response_with_relationships(): void
+    {
+        Sanctum::actingAs(User::find($this->touristId));
+
+        $response = $this->getJson('/api/v1/transport-bookings');
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => ['id', 'user', 'driver'],
+                ],
+                'links',
+                'meta',
+            ]);
+    }
 }

@@ -108,6 +108,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('hotel-bookings/{booking}/status', [HotelBookingController::class, 'status']);
 
         // Transport booking routes
+        Route::get('transport-bookings', [TransportBookingController::class, 'index']);
         Route::post('transport-bookings', [TransportBookingController::class, 'store']);
         Route::get('transport-bookings/{booking}', [TransportBookingController::class, 'show']);
         Route::patch('transport-bookings/{booking}/cancel', [TransportBookingController::class, 'cancel']);
