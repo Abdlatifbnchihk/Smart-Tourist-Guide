@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
-use App\Models\Driver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -38,7 +37,7 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
-            'license_number' => 'sometimes|string|max:100|unique:drivers,license_number,' . $user->driver->driver_id . ',driver_id',
+            'license_number' => 'sometimes|string|max:100|unique:drivers,license_number,'.$user->driver->driver_id.',driver_id',
             'years_of_experience' => 'sometimes|nullable|integer|min:0',
             'languages' => 'sometimes|nullable|string|max:255',
             'available' => 'sometimes|boolean',

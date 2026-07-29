@@ -29,6 +29,7 @@ class HotelResource extends JsonResource
                 if ($reviews->isEmpty()) {
                     return null;
                 }
+
                 return round($reviews->avg('rating'), 1);
             }),
         ];

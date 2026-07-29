@@ -16,7 +16,7 @@ class UpdateCityRequest extends FormRequest
         $cityId = $this->route('city')->city_id;
 
         return [
-            'name' => 'required|string|max:100|unique:cities,name,' . $cityId . ',city_id',
+            'name' => 'required|string|max:100|unique:cities,name,'.$cityId.',city_id',
             'description' => 'nullable|string',
             'region' => 'nullable|string|max:100',
         ];

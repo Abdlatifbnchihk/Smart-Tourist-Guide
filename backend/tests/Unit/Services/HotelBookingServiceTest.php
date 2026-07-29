@@ -2,23 +2,25 @@
 
 namespace Tests\Unit\Services;
 
+use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Services\HotelBookingService;
-use App\Enums\BookingStatus;
 use Carbon\Carbon;
+use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Tests\TestCase;
 use RuntimeException;
-use DomainException;
+use Tests\TestCase;
 
 class HotelBookingServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     private HotelBookingService $service;
+
     private int $userId;
+
     private int $roomId;
 
     protected function setUp(): void
@@ -27,7 +29,7 @@ class HotelBookingServiceTest extends TestCase
         if (DB::getDriverName() === 'sqlite') {
             DB::unprepared('PRAGMA foreign_keys = OFF');
         }
-        $this->service = new HotelBookingService();
+        $this->service = new HotelBookingService;
 
         // Create user directly
         $this->userId = DB::table('users')->insertGetId([
