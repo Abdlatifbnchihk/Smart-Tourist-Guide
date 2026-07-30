@@ -12,7 +12,7 @@ use App\Http\Controllers\Driver\BookingController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\RestaurantController;
-use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\Api\V1\TransportBookingController;
 use App\Http\Controllers\VehicleController;

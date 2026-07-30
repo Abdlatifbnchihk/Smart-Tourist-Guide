@@ -20,6 +20,24 @@ class ReviewResource extends JsonResource
                 'first_name' => $this->user->first_name,
                 'last_name' => $this->user->last_name,
             ],
+            'hotel' => $this->when($this->hotel_id, function () {
+                return [
+                    'id' => $this->hotel->id,
+                    'name' => $this->hotel->name,
+                ];
+            }),
+            'driver' => $this->when($this->driver_id, function () {
+                return [
+                    'id' => $this->driver->id,
+                    'license_plate' => $this->driver->license_plate,
+                ];
+            }),
+            'attraction' => $this->when($this->attraction_id, function () {
+                return [
+                    'id' => $this->attraction->id,
+                    'name' => $this->attraction->name,
+                ];
+            }),
         ];
     }
 }
