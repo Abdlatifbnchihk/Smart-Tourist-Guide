@@ -10,7 +10,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\Driver\BookingController;
 use App\Http\Controllers\DriverController;
-use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\Api\V1\FavoriteController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\RoomController;
@@ -120,6 +120,7 @@ Route::prefix('v1')->group(function () {
         // Favorite routes
         Route::get('/favorites', [FavoriteController::class, 'index']);
         Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']);
+        Route::delete('/favorites/{favorite}', [FavoriteController::class, 'destroy']);
 
         // Hotel Manager routes
         Route::middleware('role:hotel_manager')->prefix('hotel-manager')->group(function () {
