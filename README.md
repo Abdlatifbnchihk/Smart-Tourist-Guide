@@ -3,7 +3,7 @@
 
 ### AI-Powered Tourism Platform — Discover, Book, and Explore Morocco
 
-[![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](#-license)
@@ -59,33 +59,11 @@ The platform is built as a decoupled **Laravel 11 REST API** + **React 18 SPA**,
 
 ## 🏗️ System Architecture
 
-```mermaid
-graph TB
-    subgraph Client["🖥️ Client Layer"]
-        WEB[React SPA]
-    end
-    subgraph Backend["⚙️ Laravel 11 API"]
-        API[REST Controllers]
-        SERVICES[Domain Services]
-        AI[AI Service Layer]
-    end
-    subgraph Data["🗄️ Data Layer"]
-        MYSQL[(MySQL 8.0)]
-        REDIS[(Redis)]
-        S3[(Object Storage)]
-    end
-    subgraph External["🔌 External"]
-        CLAUDE[Anthropic Claude API]
-    end
+This architecture illustrates the overall structure of the Smart Tourist Guide Morocco platform. The React frontend communicates with the Laravel backend through secure REST APIs. Laravel manages authentication, request validation, business logic, and database operations using a service-based architecture and Eloquent ORM. MySQL stores the application data, while file cache improves performance. The platform also integrates the Groq AI API to generate personalized travel itineraries based on user preferences and trip information.
 
-    WEB -->|REST / JSON| API
-    API --> SERVICES
-    SERVICES --> MYSQL
-    SERVICES --> REDIS
-    SERVICES --> S3
-    SERVICES --> AI
-    AI --> CLAUDE
-```
+
+![System Architecture](/docs/Architecture.png)
+
 
 > 📌 Full architecture, sequence, and deployment diagrams live in [`docs/architecture.md`](docs/architecture.md).
 
