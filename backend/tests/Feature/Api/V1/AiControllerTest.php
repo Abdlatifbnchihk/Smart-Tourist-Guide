@@ -163,6 +163,7 @@ class AiControllerTest extends TestCase
             'total_days' => 1,
             'itinerary' => [],
             'estimated_total_cost' => '500 MAD',
+            'generated_at' => now()->toISOString(),
         ];
 
         Cache::put('itinerary_'.$this->cityId.'_adventure_1_MEDIUM', $cachedData, now()->addHours(24));

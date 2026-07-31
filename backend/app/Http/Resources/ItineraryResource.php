@@ -21,6 +21,7 @@ class ItineraryResource extends JsonResource
             'total_days' => $this->resource['total_days'],
             'itinerary' => $this->resource['itinerary'],
             'estimated_total_cost' => $this->resource['estimated_total_cost'],
+            'generated_at' => $this->resource['generated_at'],
         ];
     }
 }

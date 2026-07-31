@@ -135,6 +135,7 @@ Route::prefix('v1')->group(function () {
         });
 
         // AI routes
-        Route::post('/ai/itinerary', [AiController::class, 'generateItinerary']);
+        Route::post('/ai/itinerary', [AiController::class, 'generateItinerary'])
+            ->middleware('throttle:ai-itinerary');
     });
 });
