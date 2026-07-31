@@ -169,7 +169,6 @@ Requirements:
             'total_days' => $data['number_of_days'],
             'itinerary' => $decoded['itinerary'] ?? [],
             'estimated_total_cost' => $decoded['estimated_total_cost'] ?? 'N/A',
-            'generated_at' => now()->toISOString(),
         ];
     }
 
