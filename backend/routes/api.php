@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\AiController;
+use App\Http\Controllers\Api\V1\AiController;
 use App\Http\Controllers\Api\V1\AttractionController;
 use App\Http\Controllers\Api\V1\HotelBookingController;
 use App\Http\Controllers\Api\V1\HotelController;
