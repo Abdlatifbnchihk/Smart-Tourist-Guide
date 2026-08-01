@@ -2,24 +2,24 @@
 
 namespace Database\Factories;
 
-use App\Models\Hotel;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Restaurant;
+use App\Models\City;
 
-class HotelFactory extends Factory
+class RestaurantFactory extends Factory
 {
-    protected $model = Hotel::class;
+    protected $model = Restaurant::class;
 
     public function definition(): array
     {
         return [
+            'city_id' => City::factory(),
             'name' => fake()->company(),
             'description' => fake()->paragraph(),
             'address' => fake()->address(),
-            'city_id' => \App\Models\City::factory(),
-            'stars' => fake()->numberBetween(1, 5),
+            'cuisine' => fake()->randomElement(['Moroccan', 'Italian', 'French', 'Japanese', 'Mexican']),
             'phone' => fake()->phoneNumber(),
-            'email' => fake()->email(),
-            'created_by' => \App\Models\User::factory(),
+            'price_range' => fake()->numberBetween(1, 4),
         ];
     }
 }

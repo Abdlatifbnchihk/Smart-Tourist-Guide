@@ -16,7 +16,7 @@ class UpdateRestaurantRequest extends FormRequest
         $restaurantId = $this->route('restaurant')->id;
 
         return [
-            'city_id' => 'required|exists:cities,city_id',
+            'city_id' => 'required|exists:cities,id',
             'name' => 'required|string|max:150|unique:restaurants,name,'.$restaurantId.',id',
             'description' => 'nullable|string',
             'address' => 'nullable|string|max:255',

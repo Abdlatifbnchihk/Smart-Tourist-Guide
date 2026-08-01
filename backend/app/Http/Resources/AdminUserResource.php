@@ -10,13 +10,13 @@ class AdminUserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'user_id' => $this->user_id,
+            'user_id' => $this->id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
             'email' => $this->email,
             'phone' => $this->phone,
-            'role' => $this->role->value,
-            'status' => $this->status->value,
+            'role' => is_string($this->role) ? $this->role : $this->role->value,
+            'status' => $this->status ? (is_string($this->status) ? $this->status : $this->status->value) : 'Pending',
             'active' => $this->active,
             'driver' => $this->whenLoaded('driver'),
             'bookings_count' => $this->whenCounted('bookings'),

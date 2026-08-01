@@ -16,7 +16,7 @@ class UpdateAttractionRequest extends FormRequest
         $attractionId = $this->route('attraction')->id;
 
         return [
-            'city_id' => 'required|exists:cities,city_id',
+            'city_id' => 'required|exists:cities,id',
             'name' => 'required|string|max:150|unique:attractions,name,'.$attractionId.',id',
             'description' => 'nullable|string',
             'address' => 'nullable|string|max:255',

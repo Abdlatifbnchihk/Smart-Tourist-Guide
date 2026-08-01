@@ -32,7 +32,7 @@ class AuthController extends Controller
 
         if ($request->role === 'driver') {
             Driver::create([
-                'user_id' => $user->user_id,
+                'user_id' => $user->id,
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'city_id' => $request->city_id,

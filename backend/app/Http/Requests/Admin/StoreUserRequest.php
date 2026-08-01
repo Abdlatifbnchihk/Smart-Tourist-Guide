@@ -24,7 +24,7 @@ class StoreUserRequest extends FormRequest
         ];
 
         if ($this->input('role') === 'Driver') {
-            $rules['city_id'] = 'required|exists:cities,city_id';
+            $rules['city_id'] = 'required|exists:cities,id';
             $rules['license_number'] = 'required|string|max:100|unique:drivers,license_number';
         }
 

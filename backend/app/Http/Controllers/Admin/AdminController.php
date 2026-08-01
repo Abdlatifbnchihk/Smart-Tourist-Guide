@@ -46,11 +46,13 @@ class AdminController extends Controller
 
     public function store(StoreUserRequest $request): JsonResponse
     {
-        $user = User::create($request->validated());
+        $data = $request->validated();
+        $data['status'] = $data['status'] ?? 'Pending';
+        $user = User::create($data);
 
         if ($request->role === 'Driver') {
             Driver::create([
-                'user_id' => $user->user_id,
+                'user_id' => $user->id,
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'city_id' => $request->city_id,

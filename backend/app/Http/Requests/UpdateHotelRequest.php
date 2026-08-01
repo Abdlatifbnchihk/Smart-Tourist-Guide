@@ -14,7 +14,7 @@ class UpdateHotelRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'city_id' => 'sometimes|required|exists:cities,city_id',
+            'city_id' => 'sometimes|required|exists:cities,id',
             'name' => 'sometimes|required|string|max:150',
             'address' => 'sometimes|required|string|max:255',
             'phone' => 'nullable|string|max:20',

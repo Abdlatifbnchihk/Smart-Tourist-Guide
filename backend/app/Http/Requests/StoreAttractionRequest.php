@@ -14,7 +14,7 @@ class StoreAttractionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'city_id' => 'required|exists:cities,city_id',
+            'city_id' => 'required|exists:cities,id',
             'name' => 'required|string|max:150|unique:attractions,name',
             'description' => 'nullable|string',
             'address' => 'nullable|string|max:255',

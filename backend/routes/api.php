@@ -60,7 +60,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
 
         // Admin routes
-        Route::middleware('role:admin')->prefix('admin')->group(function () {
+        Route::middleware('role:administrator')->prefix('admin')->group(function () {
             Route::apiResource('users', AdminController::class);
             Route::apiResource('roles', RoleController::class);
         });
@@ -72,8 +72,8 @@ Route::prefix('v1')->group(function () {
         // Attraction routes with mixed access
         Route::get('attractions', [AttractionController::class, 'index']);
         Route::get('attractions/{attraction}', [AttractionController::class, 'show']);
-        Route::post('attractions', [AttractionController::class, 'store'])->middleware('role:admin,hotel_manager');
-        Route::put('attractions/{attraction}', [AttractionController::class, 'update']);
+        Route::post('attractions', [AttractionController::class, 'store'])->middleware('role:administrator');
+        Route::put('attractions/{attraction}', [AttractionController::class, 'update'])->middleware('role:administrator');
         Route::delete('attractions/{attraction}', [AttractionController::class, 'destroy']);
 
         // Hotel routes with mixed access
