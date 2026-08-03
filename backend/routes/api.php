@@ -125,7 +125,10 @@ Route::prefix('v1')->group(function () {
         // Hotel Manager routes
         Route::middleware('role:hotel_manager')->prefix('hotel-manager')->group(function () {
             Route::apiResource('manage-hotel', App\Http\Controllers\HotelManager\HotelController::class);
-            Route::apiResource('manage-rooms', App\Http\Controllers\HotelManager\RoomController::class);
+            Route::apiResource('manage-rooms', App\Http\Controllers\HotelManager\RoomController::class)->except(['show']);
+            Route::get('manage-rooms/{room}', [App\Http\Controllers\HotelManager\RoomController::class, 'show'])->withTrashed();
+            Route::post('manage-rooms/{room}/restore', [App\Http\Controllers\HotelManager\RoomController::class, 'restore'])->withTrashed();
+            Route::delete('manage-rooms/{room}/force-delete', [App\Http\Controllers\HotelManager\RoomController::class, 'forceDelete'])->withTrashed();
         });
 
         // Driver routes
