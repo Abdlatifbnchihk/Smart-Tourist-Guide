@@ -60,7 +60,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
 
         // Admin routes
-        Route::middleware('role:admin')->prefix('admin')->group(function () {
+        Route::middleware('role:administrator')->prefix('admin')->group(function () {
             Route::apiResource('users', AdminController::class);
             Route::apiResource('roles', RoleController::class);
         });
