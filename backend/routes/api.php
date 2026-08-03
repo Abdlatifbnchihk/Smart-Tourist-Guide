@@ -3,19 +3,20 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Api\V1\AiController;
-use App\Http\Controllers\Api\V1\AttractionController;
-use App\Http\Controllers\Api\V1\HotelBookingController;
-use App\Http\Controllers\Api\V1\HotelController;
+use App\Http\Controllers\Api\V1\Catalog\AttractionController;
+use App\Http\Controllers\Api\V1\Catalog\CityController;
+use App\Http\Controllers\Api\V1\Catalog\RestaurantController;
+use App\Http\Controllers\Api\V1\Hotel\HotelBookingController;
+use App\Http\Controllers\Api\V1\Hotel\HotelController;
+use App\Http\Controllers\Api\V1\Hotel\RoomController;
+use App\Http\Controllers\Api\V1\Transport\TransportBookingController;
+use App\Http\Controllers\Api\V1\User\FavoriteController;
+use App\Http\Controllers\Api\V1\User\ReviewController;
+use App\Http\Controllers\Api\V1\User\UserController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CityController;
 use App\Http\Controllers\Driver\BookingController;
-use App\Http\Controllers\DriverController;
-use App\Http\Controllers\Api\V1\FavoriteController;
-use App\Http\Controllers\RestaurantController;
-use App\Http\Controllers\Api\V1\ReviewController;
-use App\Http\Controllers\RoomController;
-use App\Http\Controllers\Api\V1\TransportBookingController;
-use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\Driver\DriverController;
+use App\Http\Controllers\Driver\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -116,6 +117,11 @@ Route::prefix('v1')->group(function () {
 
         // Review routes
         Route::apiResource('reviews', ReviewController::class);
+
+        // User profile routes
+        Route::get('/profile', [UserController::class, 'profile']);
+        Route::put('/profile', [UserController::class, 'updateProfile']);
+        Route::put('/profile/driver', [UserController::class, 'updateDriverProfile']);
 
         // Favorite routes
         Route::get('/favorites', [FavoriteController::class, 'index']);

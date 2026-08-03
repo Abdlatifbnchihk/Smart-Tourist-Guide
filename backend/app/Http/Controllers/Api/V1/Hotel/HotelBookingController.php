@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api\V1\Hotel;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreTransportBookingRequest;
-use App\Http\Resources\TransportBookingResource;
+use App\Http\Requests\StoreHotelBookingRequest;
+use App\Http\Resources\HotelBookingResource;
 use App\Models\Booking;
-use App\Services\TransportBookingService;
+use App\Services\HotelBookingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class TransportBookingController extends Controller
+class HotelBookingController extends Controller
 {
     public function __construct(
-        private TransportBookingService $bookingService
+        private HotelBookingService $bookingService
     ) {}
 
     /**
-     * Display a listing of transport bookings.
+     * Display a listing of the resource.
      */
     public function index(Request $request)
     {
@@ -26,37 +26,44 @@ class TransportBookingController extends Controller
         $query = Booking::query();
 
         if ($user->role === 'tourist') {
+            // Tourist sees only own bookings
             $query->where('user_id', $user->id);
-        } elseif ($user->role === 'driver') {
-            $query->whereHas('driver', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
+        } elseif ($user->role === 'hotel_manager') {
+            // Hotel owner sees bookings for their hotels
+            $query->whereHas('room.hotel', function ($q) use ($user) {
+                $q->where('created_by', $user->id);
             });
         } else {
+            // Other roles see nothing (or could be admin - not required)
             $query->whereRaw('0 = 1');
         }
 
-        $query->with(['user', 'driver', 'room.hotel']);
+        // Eager load relationships
+        $query->with(['user', 'room.hotel']);
 
+        // Paginate results
         $perPage = $request->get('per_page', 15);
         $bookings = $query->paginate($perPage);
 
-        return TransportBookingResource::collection($bookings);
+        return HotelBookingResource::collection($bookings);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTransportBookingRequest $request): JsonResponse
+    public function store(StoreHotelBookingRequest $request): JsonResponse
     {
         $validated = $request->validated();
+
+        // Add user_id from authenticated user
         $validated['user_id'] = $request->user()->id;
 
         try {
             $booking = $this->bookingService->create($validated);
 
             return response()->json([
-                'message' => 'Transport booking created successfully',
-                'booking' => new TransportBookingResource($booking->load(['user', 'driver'])),
+                'message' => 'Booking created successfully',
+                'booking' => new HotelBookingResource($booking->load(['user', 'room.hotel'])),
             ], Response::HTTP_CREATED);
         } catch (\DomainException $e) {
             return response()->json([
@@ -73,24 +80,30 @@ class TransportBookingController extends Controller
         $user = $request->user();
 
         // Load relationships needed for authorization
-        $booking->load(['driver']);
+        $booking->load(['room.hotel']);
 
         // Authorization check
         if ($user->role === 'tourist') {
             if ((int) $booking->user_id !== (int) $user->id) {
                 return response()->json(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
             }
-        } elseif ($user->role === 'driver') {
-            if (! $booking->driver || (int) $booking->driver->user_id !== (int) $user->id) {
+        } elseif ($user->role === 'hotel_manager') {
+            // Check if booking's room belongs to a hotel owned by this user
+            if (! $booking->room || ! $booking->room->hotel) {
+                return response()->json(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
+            }
+            $hasAccess = (int) $booking->room->hotel->created_by === (int) $user->id;
+            if (! $hasAccess) {
                 return response()->json(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
             }
         } else {
             return response()->json(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
         }
 
+        // Load remaining relationships
         $booking->load('user');
 
-        return new TransportBookingResource($booking);
+        return new HotelBookingResource($booking);
     }
 
     /**
@@ -101,15 +114,15 @@ class TransportBookingController extends Controller
         $user = $request->user();
 
         // Load relationships needed for authorization
-        $booking->load(['driver']);
+        $booking->load(['room.hotel']);
 
         // Authorization check
         $canCancel = false;
         if ($user->role === 'tourist') {
             $canCancel = (int) $booking->user_id === (int) $user->id;
-        } elseif ($user->role === 'driver') {
-            if ($booking->driver) {
-                $canCancel = (int) $booking->driver->user_id === (int) $user->id;
+        } elseif ($user->role === 'hotel_manager') {
+            if ($booking->room && $booking->room->hotel) {
+                $canCancel = (int) $booking->room->hotel->created_by === (int) $user->id;
             }
         }
 
@@ -121,8 +134,8 @@ class TransportBookingController extends Controller
             $booking = $this->bookingService->cancel($booking);
 
             return response()->json([
-                'message' => 'Transport booking cancelled successfully',
-                'booking' => new TransportBookingResource($booking->fresh(['user', 'driver'])),
+                'message' => 'Booking cancelled successfully',
+                'booking' => new HotelBookingResource($booking->fresh(['user', 'room.hotel'])),
             ]);
         } catch (\RuntimeException $e) {
             return response()->json([
@@ -132,28 +145,31 @@ class TransportBookingController extends Controller
     }
 
     /**
-     * Update booking status (driver only).
+     * Update booking status.
      */
     public function status(Booking $booking, Request $request): JsonResponse
     {
         $user = $request->user();
 
-        // Only driver can update transport status
-        if ($user->role !== 'driver') {
+        // Only hotel_owner can update status
+        if ($user->role !== 'hotel_manager') {
             return response()->json(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
         }
 
         // Load relationships needed for authorization
-        $booking->load(['driver']);
+        $booking->load(['room.hotel']);
 
-        // Check if driver owns this booking
-        if (! $booking->driver || (int) $booking->driver->user_id !== (int) $user->id) {
+        // Check if hotel_owner manages the hotel for this booking
+        if (! $booking->room || ! $booking->room->hotel) {
+            return response()->json(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
+        }
+        if ((int) $booking->room->hotel->created_by !== (int) $user->id) {
             return response()->json(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
         }
 
         // Validate status field
         $request->validate([
-            'status' => 'required|in:confirmed,in_progress,completed',
+            'status' => 'required|in:confirmed,completed',
         ]);
 
         $status = $request->input('status');
@@ -161,15 +177,13 @@ class TransportBookingController extends Controller
         try {
             if ($status === 'confirmed') {
                 $booking = $this->bookingService->confirm($booking);
-            } elseif ($status === 'in_progress') {
-                $booking = $this->bookingService->start($booking);
             } elseif ($status === 'completed') {
                 $booking = $this->bookingService->complete($booking);
             }
 
             return response()->json([
-                'message' => 'Transport booking status updated successfully',
-                'booking' => new TransportBookingResource($booking->fresh(['user', 'driver'])),
+                'message' => 'Booking status updated successfully',
+                'booking' => new HotelBookingResource($booking->fresh(['user', 'room.hotel'])),
             ]);
         } catch (\RuntimeException $e) {
             return response()->json([
