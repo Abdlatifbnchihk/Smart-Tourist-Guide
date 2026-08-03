@@ -485,3 +485,256 @@ git commit --allow-empty -m "feat(attractions): initialize AttractionController 
 # Phase 4: Return to develop
 git checkout develop
 ```
+
+---
+
+## Sprint 3 — Task Branches
+
+Each Jira task gets its own feature branch from `develop`. Branches use the naming convention `feature/STG-XX-short-description`.
+
+### Branch List
+
+#### Backend — Foundation (Done)
+
+| Branch | Jira | Task | Commit Message |
+|--------|------|------|----------------|
+| `feature/STG-12-users-migration` | STG-12 | Rewrite Users Migration & Model per MLD Schema | `feat(users): rewrite migration and model per MLD schema` |
+| `feature/STG-14-cities-migration` | STG-14 | Create Cities Migration, Model & Seeder per MLD | `feat(cities): create migration, model and seeder` |
+| `feature/STG-15-sanctum-setup` | STG-15 | Install & Configure Laravel Sanctum | `feat(auth): install and configure Laravel Sanctum` |
+| `feature/STG-16-api-routes` | STG-16 | Create API Routes File | `feat(routes): create versioned api routes with v1 prefix` |
+| `feature/STG-17-php-enums` | STG-17 | Create PHP Enums (Role, UserStatus, BookingStatus, BookingType) | `feat(enums): create Role, UserStatus, BookingStatus, BookingType enums` |
+| `feature/STG-19-env-example` | STG-19 | Create .env.example for Backend | `chore(env): create .env.example with all required variables` |
+| `feature/STG-20-attractions-migration` | STG-20 | Attractions Migration & Model per MLD | `feat(attractions): create migration and model per MLD` |
+| `feature/STG-21-hotels-migration` | STG-21 | Hotels Migration & Model per MLD | `feat(hotels): create migration and model per MLD` |
+| `feature/STG-22-rooms-migration` | STG-22 | Rooms Migration & Model per MLD | `feat(rooms): create migration and model per MLD` |
+| `feature/STG-23-drivers-migration` | STG-23 | Drivers Migration & Model per MLD | `feat(drivers): create migration and model per MLD` |
+| `feature/STG-24-vehicles-migration` | STG-24 | Vehicles Migration & Model per MLD | `feat(vehicles): create migration and model per MLD` |
+| `feature/STG-27-reviews-migration` | STG-27 | Reviews Migration & Model per MLD (explicit FKs) | `feat(reviews): create migration and model with explicit FKs` |
+| `feature/STG-28-favorites-migration` | STG-28 | Favorites Migration & Model per MLD (explicit FKs) | `feat(favorites): create migration and model with explicit FKs` |
+| `feature/STG-29-auth-controller` | STG-29 | AuthController (Register, Login, Logout, Me) | `feat(auth): implement AuthController with register, login, logout, me` |
+| `feature/STG-30-rbac-middleware` | STG-30 | RBAC Middleware | `feat(middleware): update EnsureRoleIs to use ENUM role values` |
+| `feature/STG-31-user-controller` | STG-31 | UserController (Admin CRUD) | `feat(users): implement UserController with profile and admin CRUD` |
+| `feature/STG-72-restaurants-migration` | STG-72 | Restaurants Migration & Model per MLD | `feat(restaurants): create migration and model per MLD` |
+
+#### Backend — Catalog Controllers (Done)
+
+| Branch | Jira | Task | Commit Message |
+|--------|------|------|----------------|
+| `feature/STG-33-city-controller` | STG-33 | CityController (CRUD + Search) | `feat(cities): implement CityController with CRUD` |
+| `feature/STG-34-attraction-controller` | STG-34 | AttractionController (CRUD + Search + Filter) | `feat(attractions): implement AttractionController with CRUD` |
+| `feature/STG-35-hotel-controller` | STG-35 | HotelController (CRUD + Search) | `feat(hotels): implement HotelController with CRUD` |
+| `feature/STG-36-room-controller` | STG-36 | RoomController (CRUD under Hotel) | `feat(rooms): implement RoomController nested under hotels` |
+| `feature/STG-37-driver-controller` | STG-37 | DriverController (CRUD + Verification) | `feat(drivers): implement DriverController with CRUD` |
+| `feature/STG-38-vehicle-controller` | STG-38 | VehicleController (CRUD under Driver) | `feat(vehicles): implement VehicleController nested under drivers` |
+| `feature/STG-47-restaurants-controller` | STG-47 | RestaurantController (CRUD) | `feat(restaurants): implement RestaurantController with CRUD` |
+
+#### Backend — Booking Engine (Done)
+
+| Branch | Jira | Task | Commit Message |
+|--------|------|------|----------------|
+| `feature/STG-39-hotel-booking-service` | STG-39 | HotelBookingService (Business Logic) | `feat(bookings): implement HotelBookingService business logic` |
+| `feature/STG-40-hotel-booking-controller` | STG-40 | HotelBookingController | `feat(bookings): implement HotelBookingController with CRUD` |
+| `feature/STG-41-transport-booking-service` | STG-41 | TransportBookingService (Business Logic) | `feat(bookings): implement TransportBookingService business logic` |
+| `feature/STG-42-transport-booking-controller` | STG-42 | TransportBookingController | `feat(bookings): implement TransportBookingController with CRUD` |
+
+#### Backend — Reviews & Favorites (Done)
+
+| Branch | Jira | Task | Commit Message |
+|--------|------|------|----------------|
+| `feature/STG-43-review-service` | STG-43 | ReviewService + RatingCalculator | `feat(reviews): implement ReviewService and RatingCalculator` |
+| `feature/STG-44-review-controller` | STG-44 | ReviewController | `feat(reviews): implement ReviewController with CRUD` |
+| `feature/STG-45-favorite-controller` | STG-45 | FavoriteController (Toggle) | `feat(favorites): implement FavoriteController with toggle` |
+
+#### Backend — Testing (To Do)
+
+| Branch | Jira | Task | Commit Message |
+|--------|------|------|----------------|
+| `feature/STG-61-tests-auth` | STG-61 | Feature Tests — Auth Endpoints | `test(auth): add feature tests for auth endpoints` |
+| `feature/STG-62-tests-catalog` | STG-62 | Feature Tests — Catalog CRUD | `test(catalog): add feature tests for catalog CRUD endpoints` |
+| `feature/STG-63-tests-bookings` | STG-63 | Feature Tests — Booking Engine | `test(bookings): add feature tests for booking engine` |
+| `feature/STG-64-tests-reviews` | STG-64 | Feature Tests — Reviews & Favorites | `test(reviews): add feature tests for reviews and favorites` |
+| `feature/STG-65-tests-restaurants` | STG-65 | Feature Tests — Restaurants | `test(restaurants): add feature tests for restaurants` |
+| `feature/STG-66-unit-tests-booking` | STG-66 | Unit Tests — Booking Services | `test(bookings): add unit tests for booking services` |
+| `feature/STG-67-unit-tests-reviews` | STG-67 | Unit Tests — Review & Rating Services | `test(reviews): add unit tests for review and rating services` |
+| `feature/STG-68-code-quality` | STG-68 | Code Quality — PHPStan & Pint | `chore(quality): configure PHPStan level 6 and Laravel Pint` |
+
+#### Backend — Documentation (To Do)
+
+| Branch | Jira | Task | Commit Message |
+|--------|------|------|----------------|
+| `feature/STG-69-api-docs` | STG-69 | API Documentation (docs/api.md) | `docs(api): create comprehensive API documentation` |
+| `feature/STG-70-database-docs` | STG-70 | Database Documentation (docs/database.md) | `docs(database): create database schema documentation` |
+| `feature/STG-71-roles-seeder` | STG-71 | Fix Roles Seeder (4 Roles) | `fix(seeder): update roles seeder with 4 roles` |
+
+#### Frontend (In Progress / To Do)
+
+| Branch | Jira | Task | Commit Message |
+|--------|------|------|----------------|
+| `feature/STG-48-scaffold` | STG-48 | Scaffold React + Vite Project | `feat(frontend): scaffold React + Vite project with Tailwind CSS` |
+| `feature/STG-49-api-client` | STG-49 | API Client & Types | `feat(frontend): create API client with Axios interceptors` |
+| `feature/STG-50-auth-pages` | STG-50 | Auth Context & Login/Register Pages | `feat(frontend): implement AuthContext and Login/Register pages` |
+| `feature/STG-51-layout-components` | STG-51 | Layout Components (Navbar, Footer, Sidebar) | `feat(frontend): create Navbar, Footer, Sidebar components` |
+| `feature/STG-52-home-page` | STG-52 | Home Page & City Listing | `feat(frontend): implement Home page with city listing` |
+| `feature/STG-53-city-detail` | STG-53 | City Detail Page | `feat(frontend): create City Detail page with tabs` |
+| `feature/STG-54-hotel-detail` | STG-54 | Hotel Detail & Room Selection | `feat(frontend): create Hotel Detail page with room selection` |
+| `feature/STG-55-attraction-detail` | STG-55 | Attraction Detail Page | `feat(frontend): create Attraction Detail page` |
+| `feature/STG-56-booking-checkout` | STG-56 | Booking Checkout Page | `feat(frontend): create Booking Checkout page` |
+| `feature/STG-57-tourist-dashboard` | STG-57 | Tourist Dashboard | `feat(frontend): create Tourist Dashboard with bookings, reviews, favorites` |
+| `feature/STG-58-hotel-dashboard` | STG-58 | Hotel Owner Dashboard | `feat(frontend): create Hotel Owner Dashboard` |
+| `feature/STG-59-driver-dashboard` | STG-59 | Driver Dashboard | `feat(frontend): create Driver Dashboard` |
+| `feature/STG-60-restaurants-api` | STG-60 | Restaurants API Endpoints | `feat(restaurants): implement restaurants API endpoints` |
+
+### Removed Tasks (No Branch Created)
+
+| Jira | Task | Reason |
+|------|------|--------|
+| STG-18 | Morph Map Config | No polymorphic relationships |
+| STG-25 | Hotel Bookings Migration | Replaced by unified bookings table |
+| STG-26 | Transport Bookings Migration | Replaced by unified bookings table |
+| STG-32 | RoleController | Roles are ENUM on users table |
+
+### Workflow
+
+```mermaid
+gitGraph
+    commit id: "init"
+    branch develop
+    checkout develop
+    commit id: "sprint 2 complete"
+    branch feature/STG-48-scaffold
+    checkout feature/STG-48-scaffold
+    commit id: "STG-48: scaffold frontend"
+    checkout develop
+    merge feature/STG-48-scaffold
+    branch feature/STG-49-api-client
+    checkout feature/STG-49-api-client
+    commit id: "STG-49: api client"
+    checkout develop
+    merge feature/STG-49-api-client
+    branch feature/STG-50-auth-pages
+    checkout feature/STG-50-auth-pages
+    commit id: "STG-50: auth pages"
+    checkout develop
+    merge feature/STG-50-auth-pages
+    branch feature/STG-51-layout-components
+    checkout feature/STG-51-layout-components
+    commit id: "STG-51: layout components"
+    checkout develop
+    merge feature/STG-51-layout-components
+    branch feature/STG-52-home-page
+    checkout feature/STG-52-home-page
+    commit id: "STG-52: home page"
+    checkout develop
+    merge feature/STG-52-home-page
+    branch feature/STG-61-tests-auth
+    checkout feature/STG-61-tests-auth
+    commit id: "STG-61: tests auth"
+    checkout develop
+    merge feature/STG-61-tests-auth
+```
+
+### Execution Commands
+
+```bash
+# Phase 1: Ensure develop is up to date
+git checkout develop
+git pull origin develop
+
+# Phase 2: Create branches for Frontend tasks
+git checkout develop
+git checkout -b feature/STG-48-scaffold
+git commit --allow-empty -m "feat(frontend): scaffold React + Vite project with Tailwind CSS"
+
+git checkout develop
+git checkout -b feature/STG-49-api-client
+git commit --allow-empty -m "feat(frontend): create API client with Axios interceptors"
+
+git checkout develop
+git checkout -b feature/STG-50-auth-pages
+git commit --allow-empty -m "feat(frontend): implement AuthContext and Login/Register pages"
+
+git checkout develop
+git checkout -b feature/STG-51-layout-components
+git commit --allow-empty -m "feat(frontend): create Navbar, Footer, Sidebar components"
+
+git checkout develop
+git checkout -b feature/STG-52-home-page
+git commit --allow-empty -m "feat(frontend): implement Home page with city listing"
+
+git checkout develop
+git checkout -b feature/STG-53-city-detail
+git commit --allow-empty -m "feat(frontend): create City Detail page with tabs"
+
+git checkout develop
+git checkout -b feature/STG-54-hotel-detail
+git commit --allow-empty -m "feat(frontend): create Hotel Detail page with room selection"
+
+git checkout develop
+git checkout -b feature/STG-55-attraction-detail
+git commit --allow-empty -m "feat(frontend): create Attraction Detail page"
+
+git checkout develop
+git checkout -b feature/STG-56-booking-checkout
+git commit --allow-empty -m "feat(frontend): create Booking Checkout page"
+
+git checkout develop
+git checkout -b feature/STG-57-tourist-dashboard
+git commit --allow-empty -m "feat(frontend): create Tourist Dashboard"
+
+git checkout develop
+git checkout -b feature/STG-58-hotel-dashboard
+git commit --allow-empty -m "feat(frontend): create Hotel Owner Dashboard"
+
+git checkout develop
+git checkout -b feature/STG-59-driver-dashboard
+git commit --allow-empty -m "feat(frontend): create Driver Dashboard"
+
+# Phase 3: Create branches for Testing tasks
+git checkout develop
+git checkout -b feature/STG-61-tests-auth
+git commit --allow-empty -m "test(auth): add feature tests for auth endpoints"
+
+git checkout develop
+git checkout -b feature/STG-62-tests-catalog
+git commit --allow-empty -m "test(catalog): add feature tests for catalog CRUD endpoints"
+
+git checkout develop
+git checkout -b feature/STG-63-tests-bookings
+git commit --allow-empty -m "test(bookings): add feature tests for booking engine"
+
+git checkout develop
+git checkout -b feature/STG-64-tests-reviews
+git commit --allow-empty -m "test(reviews): add feature tests for reviews and favorites"
+
+git checkout develop
+git checkout -b feature/STG-65-tests-restaurants
+git commit --allow-empty -m "test(restaurants): add feature tests for restaurants"
+
+git checkout develop
+git checkout -b feature/STG-66-unit-tests-booking
+git commit --allow-empty -m "test(bookings): add unit tests for booking services"
+
+git checkout develop
+git checkout -b feature/STG-67-unit-tests-reviews
+git commit --allow-empty -m "test(reviews): add unit tests for review and rating services"
+
+git checkout develop
+git checkout -b feature/STG-68-code-quality
+git commit --allow-empty -m "chore(quality): configure PHPStan level 6 and Laravel Pint"
+
+# Phase 4: Create branches for Documentation tasks
+git checkout develop
+git checkout -b feature/STG-69-api-docs
+git commit --allow-empty -m "docs(api): create comprehensive API documentation"
+
+git checkout develop
+git checkout -b feature/STG-70-database-docs
+git commit --allow-empty -m "docs(database): create database schema documentation"
+
+git checkout develop
+git checkout -b feature/STG-71-roles-seeder
+git commit --allow-empty -m "fix(seeder): update roles seeder with 4 roles"
+
+# Phase 5: Return to develop
+git checkout develop
+```
