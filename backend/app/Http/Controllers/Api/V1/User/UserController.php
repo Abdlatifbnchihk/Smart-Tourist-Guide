@@ -32,12 +32,12 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role !== 'Driver') {
+        if ($user->role !== 'driver') {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $validated = $request->validate([
-            'license_number' => 'sometimes|string|max:100|unique:drivers,license_number,'.$user->driver->driver_id.',driver_id',
+            'license_number' => 'sometimes|string|max:100|unique:drivers,license_number,'.$user->driver->id.',id',
             'years_of_experience' => 'sometimes|nullable|integer|min:0',
             'languages' => 'sometimes|nullable|string|max:255',
             'available' => 'sometimes|boolean',
