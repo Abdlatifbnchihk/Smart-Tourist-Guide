@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Api\V1\AiController;
 use App\Http\Controllers\Api\V1\Catalog\AttractionController;
@@ -62,12 +63,17 @@ Route::prefix('v1')->group(function () {
 
         // Admin routes
         Route::middleware('role:administrator')->prefix('admin')->group(function () {
+            Route::get('stats', [DashboardController::class, 'stats']);
             Route::apiResource('users', AdminController::class);
             Route::apiResource('roles', RoleController::class);
         });
 
         // Catalog routes
-        Route::apiResource('cities', CityController::class);
+        Route::get('cities', [CityController::class, 'index']);
+        Route::get('cities/{city}', [CityController::class, 'show']);
+        Route::post('cities', [CityController::class, 'store'])->middleware('role:administrator');
+        Route::put('cities/{city}', [CityController::class, 'update'])->middleware('role:administrator');
+        Route::delete('cities/{city}', [CityController::class, 'destroy'])->middleware('role:administrator');
         Route::apiResource('restaurants', RestaurantController::class);
 
         // Attraction routes with mixed access
