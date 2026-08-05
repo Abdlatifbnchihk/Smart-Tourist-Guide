@@ -14,7 +14,7 @@ export default function CitiesPage() {
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const res = await apiClient.get('/api/v1/cities')
+        const res = await apiClient.get('/cities')
         setCities(res.data.data || [])
         setFilteredCities(res.data.data || [])
       } catch (err) {
