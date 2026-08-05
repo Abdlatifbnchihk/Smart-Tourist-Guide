@@ -51,8 +51,13 @@ export default function LoginPage() {
 
     setLoading(true)
     try {
-      await login(form.email, form.password)
-      navigate('/')
+      const data = await login(form.email, form.password)
+      const user = data.user
+      if (user?.role === 'administrator') {
+        navigate('/admin')
+      } else {
+        navigate('/')
+      }
     } catch (err) {
       if (err.message?.includes('credentials') || err.message?.includes('Invalid')) {
         setServerError('Invalid email or password. Please try again.')
