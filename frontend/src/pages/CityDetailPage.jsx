@@ -160,7 +160,7 @@ export default function CityDetailPage() {
 function AttractionGridCard({ attraction }) {
   return (
     <a
-      href={`/attractions/${attraction.slug}`}
+      href={`/attractions/${attraction.id}`}
       className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
     >
       <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-200">
