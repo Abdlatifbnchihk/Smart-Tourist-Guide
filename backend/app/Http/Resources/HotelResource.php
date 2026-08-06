@@ -21,6 +21,7 @@ class HotelResource extends JsonResource
             'created_by' => $this->created_by,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'rooms_count' => $this->whenCounted('rooms'),
             'city' => new CityResource($this->whenLoaded('city')),
             'rooms' => RoomResource::collection($this->whenLoaded('rooms')),
             'reviews' => ReviewResource::collection($this->whenLoaded('reviews')),

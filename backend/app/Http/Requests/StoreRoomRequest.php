@@ -9,7 +9,8 @@ class StoreRoomRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $hotelId = $this->input('hotel_id');
+        // Get hotel_id from route parameter or request body
+        $hotelId = $this->route('hotelId') ?? $this->input('hotel_id');
 
         if (!$hotelId) {
             return false;
@@ -17,14 +18,24 @@ class StoreRoomRequest extends FormRequest
 
         $hotel = Hotel::find($hotelId);
 
-        return $hotel && $hotel->created_by === $this->user()->id;
+        if (!$hotel) {
+            return false;
+        }
+
+        $user = $this->user();
+
+        // Allow if user is the hotel creator, admin, or hotel_manager
+        return $hotel->created_by === $user->id ||
+            in_array($user->role, ['administrator', 'hotel_manager']);
     }
 
     public function rules(): array
     {
+        // Get hotel_id from route parameter or request body
+        $hotelId = $this->route('hotelId') ?? $this->input('hotel_id');
+
         return [
-            'hotel_id' => 'required|exists:hotels,hotel_id',
-            'number' => ['required', 'string', 'max:20', \Illuminate\Validation\Rule::unique('rooms', 'number')->where('hotel_id', $this->input('hotel_id'))],
+            'number' => ['required', 'string', 'max:20', \Illuminate\Validation\Rule::unique('rooms', 'number')->where('hotel_id', $hotelId)],
             'type' => 'required|string|max:50',
             'capacity' => 'required|integer|min:1',
             'price_per_night' => 'required|numeric|gt:0',

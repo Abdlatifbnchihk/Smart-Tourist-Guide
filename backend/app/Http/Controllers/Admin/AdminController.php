@@ -91,4 +91,41 @@ class AdminController extends Controller
             'message' => 'User deleted successfully',
         ]);
     }
+
+    public function stats(): JsonResponse
+    {
+        $stats = [
+            'total_users' => User::count(),
+            'total_cities' => \App\Models\City::count(),
+            'total_hotels' => \App\Models\Hotel::count(),
+            'total_bookings' => \App\Models\Booking::count(),
+            'average_rating' => \App\Models\Review::avg('rating') ?? 0,
+            'recent_bookings' => \App\Models\Booking::with(['user', 'room.hotel'])
+                ->latest()
+                ->take(5)
+                ->get()
+                ->map(fn($booking) => [
+                    'id' => $booking->id,
+                    'booking_number' => $booking->booking_number,
+                    'tourist_name' => $booking->user->first_name . ' ' . $booking->user->last_name,
+                    'hotel_name' => $booking->room->hotel->name ?? 'N/A',
+                    'start_date' => $booking->start_date,
+                    'end_date' => $booking->end_date,
+                    'status' => $booking->status,
+                    'total_price' => $booking->total_price,
+                ]),
+            'recent_users' => User::latest()
+                ->take(5)
+                ->get()
+                ->map(fn($user) => [
+                    'id' => $user->id,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ]),
+        ];
+
+        return response()->json(['data' => $stats]);
+    }
 }

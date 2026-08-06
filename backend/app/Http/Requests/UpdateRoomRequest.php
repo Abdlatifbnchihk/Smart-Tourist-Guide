@@ -9,20 +9,29 @@ class UpdateRoomRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $room = $this->route('room');
+        // Route parameter is 'id' from PUT rooms/{id}
+        $roomId = $this->route('id');
 
-        if (!$room) {
+        if (!$roomId) {
             return false;
         }
 
-        $room = is_numeric($room) ? Room::withTrashed()->find($room) : $room;
+        $room = Room::withTrashed()->find($roomId);
 
-        return $room && $room->hotel && $room->hotel->created_by === $this->user()->id;
+        if (!$room || !$room->hotel) {
+            return false;
+        }
+
+        $user = $this->user();
+        
+        // Allow if user is the hotel creator, admin, or hotel_manager
+        return $room->hotel->created_by === $user->id || 
+               in_array($user->role, ['administrator', 'hotel_manager']);
     }
 
     public function rules(): array
     {
-        $roomId = $this->route('room');
+        $roomId = $this->route('id');
         $room = $roomId ? \App\Models\Room::withTrashed()->find($roomId) : null;
 
         return [
