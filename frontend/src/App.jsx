@@ -17,11 +17,13 @@ import DashboardPage from './pages/admin/DashboardPage'
 import CitiesManagementPage from './pages/admin/CitiesManagementPage'
 import HotelsManagementPage from './pages/admin/HotelsManagementPage'
 import AdminRoomsManagementPage from './pages/admin/RoomsManagementPage'
+import AttractionsManagementPage from './pages/admin/AttractionsManagementPage'
 import HotelManagerDashboardPage from './pages/hotel-manager/HotelManagerDashboardPage'
 import HotelManagerHotelsPage from './pages/hotel-manager/HotelsManagementPage'
 import HotelManagerRoomsPage from './pages/hotel-manager/RoomsManagementPage'
 import HotelDetailPage from './pages/hotels/HotelDetailPage'
 import RoomSelectionPage from './pages/hotels/RoomSelectionPage'
+import AttractionDetailPage from './pages/attractions/AttractionDetailPage'
 import { ProtectedRoute, AdminRoute } from './context/AuthContext'
 
 const queryClient = new QueryClient()
@@ -47,6 +49,7 @@ function App() {
                       <Route path="cities" element={<CitiesManagementPage />} />
                       <Route path="hotels" element={<HotelsManagementPage />} />
                       <Route path="hotels/:hotelId/rooms" element={<AdminRoomsManagementPage />} />
+                      <Route path="attractions" element={<AttractionsManagementPage />} />
                     </Routes>
                   </AdminLayout>
                 </AdminRoute>
@@ -116,6 +119,20 @@ function App() {
                   <Navbar />
                   <main className="flex-1">
                     <RoomSelectionPage />
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/attractions/:id"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-1">
+                    <ProtectedRoute>
+                      <AttractionDetailPage />
+                    </ProtectedRoute>
                   </main>
                   <Footer />
                 </>
