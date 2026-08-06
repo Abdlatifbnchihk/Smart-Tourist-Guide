@@ -63,7 +63,7 @@ Route::prefix('v1')->group(function () {
 
         // Admin routes
         Route::middleware('role:administrator')->prefix('admin')->group(function () {
-            Route::get('stats', [DashboardController::class, 'stats']);
+            Route::get('stats', [AdminController::class, 'stats']);
             Route::apiResource('users', AdminController::class);
             Route::apiResource('roles', RoleController::class);
         });
@@ -86,18 +86,18 @@ Route::prefix('v1')->group(function () {
         // Hotel routes with mixed access
         Route::get('hotels', [HotelController::class, 'index']);
         Route::get('hotels/{hotel}', [HotelController::class, 'show']);
-        Route::post('hotels', [HotelController::class, 'store'])->middleware('role:hotel_manager');
-        Route::put('hotels/{hotel}', [HotelController::class, 'update']);
-        Route::delete('hotels/{hotel}', [HotelController::class, 'destroy']);
+        Route::post('hotels', [HotelController::class, 'store'])->middleware('role:administrator,hotel_manager');
+        Route::put('hotels/{hotel}', [HotelController::class, 'update'])->middleware('role:administrator,hotel_manager');
+        Route::delete('hotels/{hotel}', [HotelController::class, 'destroy'])->middleware('role:administrator,hotel_manager');
 
         // Room routes (nested under hotels for create/list, standalone for show/update/delete)
         Route::get('hotels/{hotelId}/rooms', [RoomController::class, 'index']);
-        Route::post('hotels/{hotelId}/rooms', [RoomController::class, 'store'])->middleware('role:hotel_manager');
+        Route::post('hotels/{hotelId}/rooms', [RoomController::class, 'store'])->middleware('role:administrator,hotel_manager');
         Route::get('rooms/{id}', [RoomController::class, 'show']);
-        Route::put('rooms/{id}', [RoomController::class, 'update']);
-        Route::delete('rooms/{id}', [RoomController::class, 'destroy']);
-        Route::put('rooms/{id}/restore', [RoomController::class, 'restore']);
-        Route::delete('rooms/{id}/force', [RoomController::class, 'forceDestroy']);
+        Route::put('rooms/{id}', [RoomController::class, 'update'])->middleware('role:administrator,hotel_manager');
+        Route::delete('rooms/{id}', [RoomController::class, 'destroy'])->middleware('role:administrator,hotel_manager');
+        Route::put('rooms/{id}/restore', [RoomController::class, 'restore'])->middleware('role:administrator,hotel_manager');
+        Route::delete('rooms/{id}/force', [RoomController::class, 'forceDestroy'])->middleware('role:administrator,hotel_manager');
 
         Route::apiResource('drivers', DriverController::class)->except('destroy');
         Route::patch('drivers/{id}/verify', [DriverController::class, 'verify'])->middleware('role:administrator');

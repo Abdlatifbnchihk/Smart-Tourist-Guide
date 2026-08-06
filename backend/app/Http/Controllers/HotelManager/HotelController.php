@@ -17,6 +17,7 @@ class HotelController extends Controller
     {
         $hotels = Hotel::where('created_by', $request->user()->id)
             ->with('city')
+            ->withCount('rooms')
             ->paginate(15);
 
         return HotelResource::collection($hotels);

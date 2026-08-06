@@ -12,7 +12,13 @@ class EnsureRoleIs
     {
         $user = $request->user();
 
-        if (! $user || ! in_array($user->role, $roles)) {
+        // Flatten comma-separated roles into a single array
+        $allowedRoles = [];
+        foreach ($roles as $role) {
+            $allowedRoles = array_merge($allowedRoles, explode(',', $role));
+        }
+
+        if (! $user || ! in_array($user->role, $allowedRoles)) {
             abort(403, 'Unauthorized');
         }
 

@@ -47,8 +47,8 @@ class HotelController extends Controller
             $query->where('name', 'LIKE', '%'.$request->search.'%');
         }
 
-        // Eager load city relationship
-        $query->with('city');
+        // Eager load city relationship and rooms count
+        $query->with('city')->withCount('rooms');
 
         // Paginate results
         $perPage = $request->get('per_page', 15);
@@ -90,8 +90,9 @@ class HotelController extends Controller
      */
     public function update(UpdateHotelRequest $request, Hotel $hotel): JsonResponse
     {
-        // Check ownership or admin role
-        if ($request->user()->id !== $hotel->created_by && $request->user()->role !== 'administrator') {
+        // Check ownership or admin/hotel_manager role
+        $user = $request->user();
+        if ($user->id !== $hotel->created_by && !in_array($user->role, ['administrator', 'hotel_manager'])) {
             return response()->json([
                 'message' => 'You are not authorized to update this hotel',
             ], Response::HTTP_FORBIDDEN);
@@ -112,8 +113,9 @@ class HotelController extends Controller
      */
     public function destroy(Hotel $hotel, Request $request): JsonResponse
     {
-        // Check ownership or admin role
-        if ($request->user()->id !== $hotel->created_by && $request->user()->role !== 'administrator') {
+        // Check ownership or admin/hotel_manager role
+        $user = $request->user();
+        if ($user->id !== $hotel->created_by && !in_array($user->role, ['administrator', 'hotel_manager'])) {
             return response()->json([
                 'message' => 'You are not authorized to delete this hotel',
             ], Response::HTTP_FORBIDDEN);
