@@ -65,6 +65,14 @@ Route::prefix('v1')->group(function () {
             Route::get('stats', [AdminController::class, 'stats']);
             Route::apiResource('users', AdminController::class);
             Route::apiResource('roles', RoleController::class);
+            
+            // Admin booking routes
+            Route::get('hotel-bookings', [HotelBookingController::class, 'adminIndex']);
+            Route::delete('hotel-bookings/{booking}', [HotelBookingController::class, 'adminDestroy']);
+            Route::patch('hotel-bookings/{booking}/status', [HotelBookingController::class, 'adminUpdateStatus']);
+            Route::get('transport-bookings', [TransportBookingController::class, 'adminIndex']);
+            Route::delete('transport-bookings/{booking}', [TransportBookingController::class, 'adminDestroy']);
+            Route::patch('transport-bookings/{booking}/status', [TransportBookingController::class, 'adminUpdateStatus']);
         });
 
         // Catalog routes
@@ -106,8 +114,8 @@ Route::prefix('v1')->group(function () {
 
         // Booking routes
         Route::apiResource('hotel-bookings', HotelBookingController::class)->parameters(['hotel-bookings' => 'booking']);
-        Route::patch('hotel-bookings/{booking}/cancel', [HotelBookingController::class, 'cancel']);
-        Route::patch('hotel-bookings/{booking}/status', [HotelBookingController::class, 'status']);
+        Route::patch('hotel-bookings/{booking}/cancel', [HotelBookingController::class, 'cancel'])->middleware('role:administrator');
+        Route::patch('hotel-bookings/{booking}/status', [HotelBookingController::class, 'status'])->middleware('role:administrator');
 
         // Transport booking routes
         Route::get('transport-bookings', [TransportBookingController::class, 'index']);

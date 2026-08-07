@@ -191,4 +191,78 @@ class HotelBookingController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
+
+    /**
+     * Admin: Display all hotel bookings.
+     */
+    public function adminIndex(Request $request)
+    {
+        $query = Booking::query();
+        $query->with(['user', 'room.hotel']);
+
+        // Filter by status if provided
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+
+        // Search by booking number or user name
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('booking_number', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q2) use ($search) {
+                      $q2->where('first_name', 'like', "%{$search}%")
+                         ->orWhere('last_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter for hotel bookings only (has room_id)
+        $query->whereNotNull('room_id');
+
+        $perPage = $request->get('per_page', 15);
+        $bookings = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return HotelBookingResource::collection($bookings);
+    }
+
+    /**
+     * Admin: Delete a hotel booking.
+     */
+    public function adminDestroy(Booking $booking): JsonResponse
+    {
+        $booking->delete();
+        return response()->json(['message' => 'Booking deleted successfully']);
+    }
+
+    /**
+     * Admin: Update booking status.
+     */
+    public function adminUpdateStatus(Booking $booking, Request $request): JsonResponse
+    {
+        $request->validate([
+            'status' => 'required|in:confirmed,completed,cancelled',
+        ]);
+
+        $status = $request->input('status');
+
+        try {
+            if ($status === 'confirmed') {
+                $booking = $this->bookingService->confirm($booking);
+            } elseif ($status === 'completed') {
+                $booking = $this->bookingService->complete($booking);
+            } elseif ($status === 'cancelled') {
+                $booking = $this->bookingService->cancel($booking);
+            }
+
+            return response()->json([
+                'message' => 'Booking status updated successfully',
+                'booking' => new HotelBookingResource($booking->fresh(['user', 'room.hotel'])),
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
 }
