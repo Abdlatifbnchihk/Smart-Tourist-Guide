@@ -22,6 +22,9 @@ import BookingsManagementPage from './pages/admin/BookingsManagementPage'
 import HotelManagerDashboardPage from './pages/hotel-manager/HotelManagerDashboardPage'
 import HotelManagerHotelsPage from './pages/hotel-manager/HotelsManagementPage'
 import HotelManagerRoomsPage from './pages/hotel-manager/RoomsManagementPage'
+import HotelManagerAllRoomsPage from './pages/hotel-manager/AllRoomsPage'
+import HotelManagerBookingsPage from './pages/hotel-manager/BookingsManagementPage'
+import HotelManagerDeletedPage from './pages/hotel-manager/DeletedItemsPage'
 import HotelDetailPage from './pages/hotels/HotelDetailPage'
 import RoomSelectionPage from './pages/hotels/RoomSelectionPage'
 import AttractionDetailPage from './pages/attractions/AttractionDetailPage'
@@ -75,6 +78,9 @@ function App() {
                       <Route index element={<HotelManagerDashboardPage />} />
                       <Route path="hotels" element={<HotelManagerHotelsPage />} />
                       <Route path="hotels/:hotelId/rooms" element={<HotelManagerRoomsPage />} />
+                      <Route path="rooms" element={<HotelManagerAllRoomsPage />} />
+                      <Route path="bookings" element={<HotelManagerBookingsPage />} />
+                      <Route path="deleted" element={<HotelManagerDeletedPage />} />
                     </Routes>
                   </HotelManagerLayout>
                 </ProtectedRoute>

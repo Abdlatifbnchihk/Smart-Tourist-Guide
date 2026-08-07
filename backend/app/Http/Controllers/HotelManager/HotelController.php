@@ -80,4 +80,50 @@ class HotelController extends Controller
             'message' => 'Hotel deleted successfully',
         ]);
     }
+
+    public function restore($hotel, Request $request): JsonResponse
+    {
+        $hotel = Hotel::withTrashed()->findOrFail($hotel);
+
+        if ($hotel->created_by !== $request->user()->id) {
+            return response()->json([
+                'message' => 'You are not authorized to restore this hotel',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $hotel->restore();
+
+        return response()->json([
+            'message' => 'Hotel restored successfully',
+            'hotel' => new HotelResource($hotel->fresh(['city'])),
+        ]);
+    }
+
+    public function forceDelete($hotel, Request $request): JsonResponse
+    {
+        $hotel = Hotel::withTrashed()->findOrFail($hotel);
+
+        if ($hotel->created_by !== $request->user()->id) {
+            return response()->json([
+                'message' => 'You are not authorized to permanently delete this hotel',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $hotel->forceDelete();
+
+        return response()->json([
+            'message' => 'Hotel permanently deleted successfully',
+        ]);
+    }
+
+    public function trashed(Request $request)
+    {
+        $hotels = Hotel::where('created_by', $request->user()->id)
+            ->onlyTrashed()
+            ->with('city')
+            ->withCount('rooms')
+            ->paginate(15);
+
+        return HotelResource::collection($hotels);
+    }
 }
