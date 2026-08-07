@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { getRooms } from '../../services/hotelService'
+import { getHotel, getRooms } from '../../services/hotelService'
 
 export default function RoomSelectionPage() {
   const { hotelId } = useParams()
@@ -14,10 +14,19 @@ export default function RoomSelectionPage() {
     max_price: '',
   })
 
-  const { data: rooms, isLoading, error } = useQuery({
+  const { data: hotelResponse, isLoading: hotelLoading } = useQuery({
+    queryKey: ['hotel', hotelId],
+    queryFn: () => getHotel(hotelId),
+  })
+
+  const hotel = hotelResponse?.data || hotelResponse
+
+  const { data: roomsResponse, isLoading, error } = useQuery({
     queryKey: ['rooms', hotelId, filters],
     queryFn: () => getRooms(hotelId, filters),
   })
+
+  const rooms = roomsResponse?.data || roomsResponse || []
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
@@ -25,7 +34,7 @@ export default function RoomSelectionPage() {
 
   const handleSelectRoom = (room) => {
     if (!room.available) return
-    navigate(`/checkout?hotelId=${hotelId}&roomId=${room.id}`)
+    navigate(`/booking/hotel`, { state: { room, hotel } })
   }
 
   if (isLoading) {
@@ -122,7 +131,7 @@ export default function RoomSelectionPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {rooms?.map((room) => (
             <div
-              key={room.id}
+              key={room.room_id || room.id}
               className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all ${
                 room.available
                   ? 'hover:shadow-md cursor-pointer'
