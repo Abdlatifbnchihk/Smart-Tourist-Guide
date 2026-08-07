@@ -82,3 +82,37 @@ export async function deleteTransportBooking(id) {
   const response = await apiClient.delete(`/admin/transport-bookings/${id}`)
   return response.data
 }
+
+// Tourist-facing booking functions
+export async function getMyHotelBookings(filters = {}) {
+  const params = new URLSearchParams()
+  if (filters.status) params.append('status', filters.status)
+  const queryString = params.toString()
+  const url = `/hotel-bookings${queryString ? `?${queryString}` : ''}`
+  const response = await apiClient.get(url)
+  return response.data
+}
+
+export async function getMyTransportBookings(filters = {}) {
+  const params = new URLSearchParams()
+  if (filters.status) params.append('status', filters.status)
+  const queryString = params.toString()
+  const url = `/transport-bookings${queryString ? `?${queryString}` : ''}`
+  const response = await apiClient.get(url)
+  return response.data
+}
+
+export async function getMyBookingDetail(id) {
+  const response = await apiClient.get(`/hotel-bookings/${id}`)
+  return response.data
+}
+
+export async function cancelMyHotelBooking(id) {
+  const response = await apiClient.patch(`/hotel-bookings/${id}/cancel`)
+  return response.data
+}
+
+export async function cancelMyTransportBooking(id) {
+  const response = await apiClient.patch(`/transport-bookings/${id}/cancel`)
+  return response.data
+}
