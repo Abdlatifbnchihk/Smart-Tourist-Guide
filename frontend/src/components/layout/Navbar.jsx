@@ -102,6 +102,35 @@ export default function Navbar() {
                       My Profile
                     </Link>
                     <hr className="my-1 border-slate-200" />
+                    <Link
+                      to="/my-bookings/hotel"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      My Hotel Bookings
+                    </Link>
+                    <Link
+                      to="/my-bookings/transport"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      My Transport Bookings
+                    </Link>
+                    <Link
+                      to="/favorites"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      My Favorites
+                    </Link>
+                    <Link
+                      to="/my-reviews"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      My Reviews
+                    </Link>
+                    <hr className="my-1 border-slate-200" />
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"

@@ -27,6 +27,11 @@ import RoomSelectionPage from './pages/hotels/RoomSelectionPage'
 import AttractionDetailPage from './pages/attractions/AttractionDetailPage'
 import HotelBookingCheckout from './pages/booking/HotelBookingCheckout'
 import TransportBookingCheckout from './pages/booking/TransportBookingCheckout'
+import MyHotelBookingsPage from './pages/my-bookings/MyHotelBookingsPage'
+import MyTransportBookingsPage from './pages/my-bookings/MyTransportBookingsPage'
+import BookingDetailPage from './pages/my-bookings/BookingDetailPage'
+import FavoritesPage from './pages/favorites/FavoritesPage'
+import MyReviewsPage from './pages/my-reviews/MyReviewsPage'
 import { ProtectedRoute, AdminRoute } from './context/AuthContext'
 
 const queryClient = new QueryClient()
@@ -164,6 +169,76 @@ function App() {
                   <main className="flex-1">
                     <ProtectedRoute>
                       <TransportBookingCheckout />
+                    </ProtectedRoute>
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/my-bookings/hotel"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-1">
+                    <ProtectedRoute>
+                      <MyHotelBookingsPage />
+                    </ProtectedRoute>
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/my-bookings/transport"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-1">
+                    <ProtectedRoute>
+                      <MyTransportBookingsPage />
+                    </ProtectedRoute>
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/my-bookings/:id"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-1">
+                    <ProtectedRoute>
+                      <BookingDetailPage />
+                    </ProtectedRoute>
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/favorites"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-1">
+                    <ProtectedRoute>
+                      <FavoritesPage />
+                    </ProtectedRoute>
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/my-reviews"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-1">
+                    <ProtectedRoute>
+                      <MyReviewsPage />
                     </ProtectedRoute>
                   </main>
                   <Footer />
