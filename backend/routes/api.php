@@ -114,8 +114,8 @@ Route::prefix('v1')->group(function () {
 
         // Booking routes
         Route::apiResource('hotel-bookings', HotelBookingController::class)->parameters(['hotel-bookings' => 'booking']);
-        Route::patch('hotel-bookings/{booking}/cancel', [HotelBookingController::class, 'cancel'])->middleware('role:administrator');
-        Route::patch('hotel-bookings/{booking}/status', [HotelBookingController::class, 'status'])->middleware('role:administrator');
+        Route::patch('hotel-bookings/{booking}/cancel', [HotelBookingController::class, 'cancel']);
+        Route::patch('hotel-bookings/{booking}/status', [HotelBookingController::class, 'status']);
 
         // Transport booking routes
         Route::get('transport-bookings', [TransportBookingController::class, 'index']);
@@ -139,8 +139,17 @@ Route::prefix('v1')->group(function () {
 
         // Hotel Manager routes
         Route::middleware('role:hotel_manager')->prefix('hotel-manager')->group(function () {
-            Route::apiResource('manage-hotel', App\Http\Controllers\HotelManager\HotelController::class);
-            Route::apiResource('manage-rooms', App\Http\Controllers\HotelManager\RoomController::class)->except(['show']);
+            Route::get('manage-hotel/trashed', [App\Http\Controllers\HotelManager\HotelController::class, 'trashed']);
+            Route::apiResource('manage-hotel', App\Http\Controllers\HotelManager\HotelController::class)->parameters([
+                'manage-hotel' => 'hotel',
+            ]);
+            Route::post('manage-hotel/{hotel}/restore', [App\Http\Controllers\HotelManager\HotelController::class, 'restore'])->withTrashed();
+            Route::delete('manage-hotel/{hotel}/force-delete', [App\Http\Controllers\HotelManager\HotelController::class, 'forceDelete'])->withTrashed();
+
+            Route::get('manage-rooms/trashed', [App\Http\Controllers\HotelManager\RoomController::class, 'trashed']);
+            Route::apiResource('manage-rooms', App\Http\Controllers\HotelManager\RoomController::class)->except(['show'])->parameters([
+                'manage-rooms' => 'room',
+            ]);
             Route::get('manage-rooms/{room}', [App\Http\Controllers\HotelManager\RoomController::class, 'show'])->withTrashed();
             Route::post('manage-rooms/{room}/restore', [App\Http\Controllers\HotelManager\RoomController::class, 'restore'])->withTrashed();
             Route::delete('manage-rooms/{room}/force-delete', [App\Http\Controllers\HotelManager\RoomController::class, 'forceDelete'])->withTrashed();

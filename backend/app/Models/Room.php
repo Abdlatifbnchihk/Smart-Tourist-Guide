@@ -21,6 +21,14 @@ class Room extends Model
     protected $primaryKey = 'room_id';
 
     /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'room_id';
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>

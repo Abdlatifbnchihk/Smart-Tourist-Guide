@@ -28,6 +28,7 @@ export default function HotelsManagementPage() {
 
   const fetchHotels = async () => {
     try {
+      // GET /api/v1/hotel-manager/manage-hotel - returns paginated hotels
       const res = await apiClient.get('/hotel-manager/manage-hotel')
       setHotels(res.data.data || [])
     } catch (err) {
@@ -39,6 +40,7 @@ export default function HotelsManagementPage() {
 
   const fetchCities = async () => {
     try {
+      // GET /api/v1/cities - returns all cities
       const res = await apiClient.get('/cities')
       setCities(res.data.data || [])
     } catch (err) {
@@ -94,8 +96,10 @@ export default function HotelsManagementPage() {
     setSubmitting(true)
     try {
       if (editingHotel) {
+        // PUT /api/v1/hotel-manager/manage-hotel/{hotel}
         await apiClient.put(`/hotel-manager/manage-hotel/${editingHotel.hotel_id || editingHotel.id}`, form)
       } else {
+        // POST /api/v1/hotel-manager/manage-hotel
         await apiClient.post('/hotel-manager/manage-hotel', form)
       }
       setShowModal(false)
@@ -112,6 +116,7 @@ export default function HotelsManagementPage() {
 
     setDeleting(true)
     try {
+      // DELETE /api/v1/hotel-manager/manage-hotel/{hotel}
       await apiClient.delete(`/hotel-manager/manage-hotel/${deletingHotel.hotel_id || deletingHotel.id}`)
       setShowDeleteModal(false)
       setDeletingHotel(null)
