@@ -1,22 +1,19 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
 import apiClient from '../../services/apiClient'
 import Skeleton from '../../components/ui/Skeleton'
 
-const emptyForm = { number: '', type: 'single', capacity: 1, price_per_night: '', quantity_available: 1, available: true }
-
-export default function RoomsManagementPage() {
-  const { hotelId } = useParams()
-  const [hotel, setHotel] = useState(null)
+export default function AllRoomsPage() {
   const [rooms, setRooms] = useState([])
+  const [hotels, setHotels] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedHotel, setSelectedHotel] = useState('all')
   const [showDeleted, setShowDeleted] = useState(false)
 
   const [showModal, setShowModal] = useState(false)
   const [editingRoom, setEditingRoom] = useState(null)
-  const [form, setForm] = useState(emptyForm)
+  const [form, setForm] = useState({ number: '', type: 'single', capacity: 1, price_per_night: '', quantity_available: 1, hotel_id: '', available: true })
   const [formErrors, setFormErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
 
@@ -29,26 +26,14 @@ export default function RoomsManagementPage() {
   const [restoring, setRestoring] = useState(false)
 
   useEffect(() => {
-    if (hotelId) {
-      fetchHotel()
-      fetchRooms()
-    }
-  }, [hotelId])
-
-  const fetchHotel = async () => {
-    try {
-      // GET /api/v1/hotel-manager/manage-hotel/{hotel}
-      const res = await apiClient.get(`/hotel-manager/manage-hotel/${hotelId}`)
-      setHotel(res.data.data || res.data)
-    } catch (err) {
-      console.error('Failed to load hotel:', err)
-    }
-  }
+    fetchRooms()
+    fetchHotels()
+  }, [])
 
   const fetchRooms = async () => {
     try {
-      // GET /api/v1/hotels/{hotelId}/rooms - public endpoint to list rooms
-      const res = await apiClient.get(`/hotels/${hotelId}/rooms`)
+      // GET /api/v1/hotel-manager/manage-rooms - returns all rooms for manager's hotels
+      const res = await apiClient.get('/hotel-manager/manage-rooms')
       setRooms(res.data.data || [])
     } catch (err) {
       setError('Failed to load rooms.')
@@ -57,16 +42,32 @@ export default function RoomsManagementPage() {
     }
   }
 
+  const fetchHotels = async () => {
+    try {
+      // GET /api/v1/hotel-manager/manage-hotel - returns manager's hotels
+      const res = await apiClient.get('/hotel-manager/manage-hotel')
+      setHotels(res.data.data || [])
+    } catch (err) {
+      console.error('Failed to load hotels:', err)
+    }
+  }
+
   const filteredRooms = rooms.filter((room) => {
     const matchesSearch = room.number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       room.type?.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesDeletedFilter = showDeleted ? true : !room.deleted_at
-    return matchesSearch && matchesDeletedFilter
+    const matchesHotel = selectedHotel === 'all' || room.hotel_id == selectedHotel
+    const matchesDeleted = showDeleted ? true : !room.deleted_at
+    return matchesSearch && matchesHotel && matchesDeleted
   })
+
+  const getHotelName = (hotelId) => {
+    const hotel = hotels.find(h => h.id === hotelId || h.hotel_id === hotelId)
+    return hotel?.name || 'N/A'
+  }
 
   const openCreateModal = () => {
     setEditingRoom(null)
-    setForm(emptyForm)
+    setForm({ number: '', type: 'single', capacity: 1, price_per_night: '', quantity_available: 1, hotel_id: hotels[0]?.id || '', available: true })
     setFormErrors({})
     setShowModal(true)
   }
@@ -79,6 +80,7 @@ export default function RoomsManagementPage() {
       capacity: room.capacity || 1,
       price_per_night: room.price_per_night || '',
       quantity_available: room.quantity_available || 1,
+      hotel_id: room.hotel_id || '',
       available: room.available !== false,
     })
     setFormErrors({})
@@ -98,6 +100,7 @@ export default function RoomsManagementPage() {
   const validateForm = () => {
     const errors = {}
     if (!form.number.trim()) errors.number = 'Room number is required'
+    if (!form.hotel_id) errors.hotel_id = 'Hotel is required'
     if (!form.price_per_night) errors.price_per_night = 'Price is required'
     if (form.capacity < 1) errors.capacity = 'Capacity must be at least 1'
     setFormErrors(errors)
@@ -112,7 +115,7 @@ export default function RoomsManagementPage() {
     try {
       const payload = {
         ...form,
-        hotel_id: parseInt(hotelId),
+        hotel_id: parseInt(form.hotel_id),
         price_per_night: parseFloat(form.price_per_night),
         capacity: parseInt(form.capacity),
         quantity_available: parseInt(form.quantity_available),
@@ -181,10 +184,8 @@ export default function RoomsManagementPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Rooms Management</h2>
-          <p className="text-slate-500 mt-1">
-            {hotel ? `Managing rooms for ${hotel.name}` : 'Manage rooms'}
-          </p>
+          <h2 className="text-2xl font-bold text-slate-800">My Rooms</h2>
+          <p className="text-slate-500 mt-1">Manage all rooms across your hotels</p>
         </div>
         <button
           onClick={openCreateModal}
@@ -194,16 +195,28 @@ export default function RoomsManagementPage() {
         </button>
       </div>
 
-      {/* Search and Filters */}
+      {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm p-4">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <input
             type="text"
             placeholder="Search rooms..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="flex-1 min-w-[200px] px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
+          <select
+            value={selectedHotel}
+            onChange={(e) => setSelectedHotel(e.target.value)}
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+          >
+            <option value="all">All Hotels</option>
+            {hotels.map((hotel) => (
+              <option key={hotel.id || hotel.hotel_id} value={hotel.id || hotel.hotel_id}>
+                {hotel.name}
+              </option>
+            ))}
+          </select>
           <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
             <input
               type="checkbox"
@@ -229,6 +242,7 @@ export default function RoomsManagementPage() {
           <thead>
             <tr className="text-left text-sm text-slate-500 border-b border-slate-100 bg-slate-50">
               <th className="px-6 py-3 font-medium">Room #</th>
+              <th className="px-6 py-3 font-medium">Hotel</th>
               <th className="px-6 py-3 font-medium">Type</th>
               <th className="px-6 py-3 font-medium">Capacity</th>
               <th className="px-6 py-3 font-medium">Price/Night</th>
@@ -239,7 +253,7 @@ export default function RoomsManagementPage() {
           <tbody>
             {filteredRooms.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
+                <td colSpan="7" className="px-6 py-12 text-center text-slate-500">
                   No rooms found
                 </td>
               </tr>
@@ -256,6 +270,7 @@ export default function RoomsManagementPage() {
                         {room.number}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-slate-600">{getHotelName(room.hotel_id)}</td>
                     <td className="px-6 py-4">
                       <span className={`capitalize ${isDeleted ? 'text-slate-500' : 'text-slate-600'}`}>{room.type}</span>
                     </td>
@@ -322,6 +337,26 @@ export default function RoomsManagementPage() {
               {formErrors.submit && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                   {formErrors.submit}
+                </div>
+              )}
+              {!editingRoom && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Hotel *</label>
+                  <select
+                    value={form.hotel_id}
+                    onChange={(e) => setForm({ ...form, hotel_id: e.target.value })}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                      formErrors.hotel_id ? 'border-red-500' : 'border-slate-300'
+                    }`}
+                  >
+                    <option value="">Select a hotel</option>
+                    {hotels.map((hotel) => (
+                      <option key={hotel.id || hotel.hotel_id} value={hotel.id || hotel.hotel_id}>
+                        {hotel.name}
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.hotel_id && <p className="mt-1 text-sm text-red-600">{formErrors.hotel_id}</p>}
                 </div>
               )}
               <div>

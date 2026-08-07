@@ -93,7 +93,7 @@ export default function Navbar() {
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
                     <Link
                       to="/profile"
                       onClick={() => setDropdownOpen(false)}
@@ -101,35 +101,79 @@ export default function Navbar() {
                     >
                       My Profile
                     </Link>
-                    <hr className="my-1 border-slate-200" />
-                    <Link
-                      to="/my-bookings/hotel"
-                      onClick={() => setDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      My Hotel Bookings
-                    </Link>
-                    <Link
-                      to="/my-bookings/transport"
-                      onClick={() => setDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      My Transport Bookings
-                    </Link>
-                    <Link
-                      to="/favorites"
-                      onClick={() => setDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      My Favorites
-                    </Link>
-                    <Link
-                      to="/my-reviews"
-                      onClick={() => setDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      My Reviews
-                    </Link>
+
+                    {user?.role === 'hotel_manager' ? (
+                      <>
+                        <hr className="my-1 border-slate-200" />
+                        <div className="px-4 py-1 text-xs font-semibold text-slate-400 uppercase">Hotel Manager</div>
+                        <Link
+                          to="/hotel-manager"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          Dashboard
+                        </Link>
+                        <Link
+                          to="/hotel-manager/hotels"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          My Hotels
+                        </Link>
+                        <Link
+                          to="/hotel-manager/bookings"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          My Bookings
+                        </Link>
+                      </>
+                    ) : user?.role === 'administrator' ? (
+                      <>
+                        <hr className="my-1 border-slate-200" />
+                        <div className="px-4 py-1 text-xs font-semibold text-slate-400 uppercase">Admin</div>
+                        <Link
+                          to="/admin"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          Admin Dashboard
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <hr className="my-1 border-slate-200" />
+                        <Link
+                          to="/my-bookings/hotel"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          My Hotel Bookings
+                        </Link>
+                        <Link
+                          to="/my-bookings/transport"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          My Transport Bookings
+                        </Link>
+                        <Link
+                          to="/favorites"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          My Favorites
+                        </Link>
+                        <Link
+                          to="/my-reviews"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          My Reviews
+                        </Link>
+                      </>
+                    )}
+
                     <hr className="my-1 border-slate-200" />
                     <button
                       onClick={handleLogout}

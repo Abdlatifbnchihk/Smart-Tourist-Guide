@@ -111,4 +111,15 @@ class RoomController extends Controller
             'message' => 'Room permanently deleted successfully',
         ]);
     }
+
+    public function trashed(Request $request)
+    {
+        $rooms = Room::whereHas('hotel', function ($query) use ($request) {
+            $query->where('created_by', $request->user()->id);
+        })->onlyTrashed()
+          ->with('hotel')
+          ->paginate(15);
+
+        return RoomResource::collection($rooms);
+    }
 }

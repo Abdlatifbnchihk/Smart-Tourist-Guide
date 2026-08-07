@@ -35,6 +35,7 @@ class StoreRoomRequest extends FormRequest
         $hotelId = $this->route('hotelId') ?? $this->input('hotel_id');
 
         return [
+            'hotel_id' => ['required', 'integer', 'exists:hotels,id'],
             'number' => ['required', 'string', 'max:20', \Illuminate\Validation\Rule::unique('rooms', 'number')->where('hotel_id', $hotelId)],
             'type' => 'required|string|max:50',
             'capacity' => 'required|integer|min:1',

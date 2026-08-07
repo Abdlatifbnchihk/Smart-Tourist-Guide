@@ -41,6 +41,11 @@ class HotelBookingController extends Controller
         // Eager load relationships
         $query->with(['user', 'room.hotel']);
 
+        // Filter by status if provided
+        if ($request->has('status') && $request->status !== '' && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
         // Paginate results
         $perPage = $request->get('per_page', 15);
         $bookings = $query->paginate($perPage);

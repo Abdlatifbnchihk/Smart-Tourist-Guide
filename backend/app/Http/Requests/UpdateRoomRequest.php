@@ -9,16 +9,14 @@ class UpdateRoomRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Route parameter is 'id' from PUT rooms/{id}
-        $roomId = $this->route('id');
+        // Route model binding resolves 'room' to a Room instance
+        $room = $this->route('room');
 
-        if (!$roomId) {
+        if (!$room || !$room instanceof Room) {
             return false;
         }
 
-        $room = Room::withTrashed()->find($roomId);
-
-        if (!$room || !$room->hotel) {
+        if (!$room->hotel) {
             return false;
         }
 
@@ -31,8 +29,8 @@ class UpdateRoomRequest extends FormRequest
 
     public function rules(): array
     {
-        $roomId = $this->route('id');
-        $room = $roomId ? \App\Models\Room::withTrashed()->find($roomId) : null;
+        $room = $this->route('room');
+        $roomId = $room?->room_id;
 
         return [
             'number' => [
