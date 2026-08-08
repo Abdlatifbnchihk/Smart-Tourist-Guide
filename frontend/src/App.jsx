@@ -36,6 +36,13 @@ import BookingDetailPage from './pages/my-bookings/BookingDetailPage'
 import FavoritesPage from './pages/favorites/FavoritesPage'
 import MyReviewsPage from './pages/my-reviews/MyReviewsPage'
 import { ProtectedRoute, AdminRoute } from './context/AuthContext'
+import DriverLayout from './components/driver/DriverLayout'
+import { DriverProvider } from './context/DriverContext'
+import DriverDashboardPage from './pages/driver/DriverDashboardPage'
+import DriverVehiclesPage from './pages/driver/VehiclesManagementPage'
+import DriverBookingsPage from './pages/driver/BookingsManagementPage'
+import DriverBookingDetailPage from './pages/driver/BookingDetailPage'
+import DriverProfilePage from './pages/driver/DriverProfilePage'
 
 const queryClient = new QueryClient()
 
@@ -83,6 +90,26 @@ function App() {
                       <Route path="deleted" element={<HotelManagerDeletedPage />} />
                     </Routes>
                   </HotelManagerLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Driver Routes */}
+            <Route
+              path="/driver/*"
+              element={
+                <ProtectedRoute>
+                  <DriverProvider>
+                    <DriverLayout>
+                      <Routes>
+                        <Route index element={<DriverDashboardPage />} />
+                        <Route path="vehicles" element={<DriverVehiclesPage />} />
+                        <Route path="bookings" element={<DriverBookingsPage />} />
+                        <Route path="bookings/:id" element={<DriverBookingDetailPage />} />
+                        <Route path="profile" element={<DriverProfilePage />} />
+                      </Routes>
+                    </DriverLayout>
+                  </DriverProvider>
                 </ProtectedRoute>
               }
             />

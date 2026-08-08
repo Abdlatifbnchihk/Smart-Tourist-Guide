@@ -20,6 +20,10 @@ class DriverController extends Controller
     {
         $query = Driver::query();
 
+        if ($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
         if ($request->has('city_id')) {
             $query->where('city_id', $request->city_id);
         }

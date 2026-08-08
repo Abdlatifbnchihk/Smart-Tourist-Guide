@@ -128,6 +128,32 @@ export default function Navbar() {
                           My Bookings
                         </Link>
                       </>
+                    ) : user?.role === 'driver' ? (
+                      <>
+                        <hr className="my-1 border-slate-200" />
+                        <div className="px-4 py-1 text-xs font-semibold text-slate-400 uppercase">Driver</div>
+                        <Link
+                          to="/driver"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          Dashboard
+                        </Link>
+                        <Link
+                          to="/driver/vehicles"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          My Vehicles
+                        </Link>
+                        <Link
+                          to="/driver/bookings"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                        >
+                          My Bookings
+                        </Link>
+                      </>
                     ) : user?.role === 'administrator' ? (
                       <>
                         <hr className="my-1 border-slate-200" />
