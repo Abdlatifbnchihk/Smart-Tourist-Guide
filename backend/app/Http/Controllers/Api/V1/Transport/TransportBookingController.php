@@ -35,6 +35,10 @@ class TransportBookingController extends Controller
             $query->whereRaw('0 = 1');
         }
 
+        if ($request->has('status') && $request->status !== '' && $request->status !== 'All') {
+            $query->where('status', $request->status);
+        }
+
         $query->with(['user', 'driver', 'room.hotel']);
 
         $perPage = $request->get('per_page', 15);
