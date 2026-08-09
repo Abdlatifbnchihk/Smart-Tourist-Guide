@@ -76,11 +76,8 @@ const features = [
 export default function HomePage() {
   const navigate = useNavigate()
   const scrollRef = useRef(null)
-  const restaurantScrollRef = useRef(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const [canRestScrollLeft, setCanRestScrollLeft] = useState(false)
-  const [canRestScrollRight, setCanRestScrollRight] = useState(true)
 
   const { data: cities = [], isLoading: citiesLoading } = useQuery({
     queryKey: ['cities'],
@@ -107,11 +104,6 @@ export default function HomePage() {
       setCanScrollLeft(scrollLeft > 10)
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
     }
-    if (restaurantScrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = restaurantScrollRef.current
-      setCanRestScrollLeft(scrollLeft > 10)
-      setCanRestScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
-    }
   }
 
   useEffect(() => {
@@ -133,41 +125,81 @@ export default function HomePage() {
     }
   }
 
-  const scrollRestaurants = (direction) => {
-    if (restaurantScrollRef.current) {
-      const cardWidth = 288 + 20
-      restaurantScrollRef.current.scrollBy({
-        left: direction === 'left' ? -cardWidth : cardWidth,
-        behavior: 'smooth',
-      })
-    }
-  }
-
   return (
     <div>
-      <section className="relative h-[600px] flex items-center justify-center">
+      <section className="relative min-h-[700px] flex flex-col">
         <div className="absolute inset-0">
           <img
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHzpJS8GurorE99u6EyY4itRdRlKJsaJ31TdrQhy47f8hvdFRHD2bu6li9M44kOrYKSxQBtmYwTCYtOOaPNH3Rt-eMUmLzaHIZf6o9jeJnSwwtmLndDPhKYYE4LKaAANpkKHYsqGz-gt5StcHHuWUFOCGgCEv1tmb5XCxQSuen1SuWEnwQaCbl7Bt_dYcTvuqKoqCo0m1TN5bBfoz8R6NeN_VcSThoF3IMd0GIQuK9tMk9DocccHLU"
             alt="Morocco"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 to-slate-900/50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-slate-900/90" />
         </div>
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-            Discover Morocco's Hidden Gems
-          </h1>
-          <p className="text-lg md:text-xl text-white/90 mb-8">
-            Explore cities, book hotels, hire local drivers, and let AI plan your perfect trip
-          </p>
-          <div className="flex justify-center">
-            <SearchBar onSearch={handleSearch} placeholder="Search cities, hotels, attractions..." />
+        <div className="relative z-10 flex-1 flex items-center justify-center pt-16 pb-8">
+          <div className="text-center px-4 max-w-4xl mx-auto">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+              Discover Morocco's Hidden Gems
+            </h1>
+            <p className="text-lg md:text-xl text-white/90 mb-8">
+              Explore cities, book hotels, hire local drivers, and let AI plan your perfect trip
+            </p>
+            <div className="flex justify-center">
+              <SearchBar onSearch={handleSearch} placeholder="Search cities, hotels, attractions..." />
+            </div>
+          </div>
+        </div>
+        <div className="relative z-10 pb-10 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-xl md:text-2xl font-bold text-white">Featured Restaurants</h3>
+              <a href="#restaurants" className="text-amber-400 hover:text-amber-300 text-sm font-medium flex items-center gap-1">
+                View All
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+            {restaurantsLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="bg-white/10 backdrop-blur-sm rounded-xl overflow-hidden animate-pulse">
+                    <div className="aspect-[4/3] bg-white/10" />
+                    <div className="p-3 space-y-2">
+                      <div className="h-4 bg-white/10 rounded w-3/4" />
+                      <div className="h-3 bg-white/10 rounded w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {restaurants.map((restaurant) => (
+                  <a
+                    key={restaurant.restaurant_id}
+                    href={`/restaurants/${restaurant.restaurant_id}`}
+                    className="group bg-white/10 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-white/20 transition-all duration-300"
+                  >
+                    <div className="aspect-[4/3] overflow-hidden">
+                      <img
+                        src={restaurant.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400'}
+                        alt={restaurant.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="p-3">
+                      <h4 className="text-sm font-bold text-white truncate">{restaurant.name}</h4>
+                      <p className="text-xs text-white/60 truncate">{restaurant.cuisine}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      <section className="py-16 px-4 bg-slate-50">
+      <section id="restaurants" className="py-16 px-4 bg-slate-50">
         <div className="max-w-7xl mx-auto">
           <div className="mb-10">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-2">Explore Moroccan Cities</h2>
@@ -247,69 +279,6 @@ export default function HomePage() {
               attractions.map((attraction) => (
                 <div key={attraction.id} className="flex-shrink-0">
                   <AttractionCard attraction={attraction} />
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-2">Top Restaurants</h2>
-              <p className="text-slate-600">Savor authentic Moroccan cuisine</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => scrollRestaurants('left')}
-                disabled={!canRestScrollLeft}
-                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
-                  canRestScrollLeft
-                    ? 'border-slate-300 hover:bg-slate-100 text-slate-600'
-                    : 'border-slate-200 text-slate-300 cursor-not-allowed'
-                }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                onClick={() => scrollRestaurants('right')}
-                disabled={!canRestScrollRight}
-                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
-                  canRestScrollRight
-                    ? 'border-slate-300 hover:bg-slate-100 text-slate-600'
-                    : 'border-slate-200 text-slate-300 cursor-not-allowed'
-                }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div
-            ref={restaurantScrollRef}
-            className="flex gap-5 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
-          >
-            {restaurantsLoading ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-72 bg-white rounded-xl overflow-hidden shadow-sm animate-pulse">
-                  <div className="aspect-[4/3] bg-slate-200" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-5 bg-slate-200 rounded w-3/4" />
-                    <div className="h-4 bg-slate-200 rounded w-1/2" />
-                  </div>
-                </div>
-              ))
-            ) : restaurants.length === 0 ? (
-              <p className="text-slate-500 py-8">No restaurants found</p>
-            ) : (
-              restaurants.map((restaurant) => (
-                <div key={restaurant.restaurant_id} className="flex-shrink-0">
-                  <RestaurantCard restaurant={restaurant} />
                 </div>
               ))
             )}
