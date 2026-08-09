@@ -18,6 +18,7 @@ import CitiesManagementPage from './pages/admin/CitiesManagementPage'
 import HotelsManagementPage from './pages/admin/HotelsManagementPage'
 import AdminRoomsManagementPage from './pages/admin/RoomsManagementPage'
 import AttractionsManagementPage from './pages/admin/AttractionsManagementPage'
+import RestaurantsManagementPage from './pages/admin/RestaurantsManagementPage'
 import BookingsManagementPage from './pages/admin/BookingsManagementPage'
 import UsersManagementPage from './pages/admin/UsersManagementPage'
 import ReviewsManagementPage from './pages/admin/ReviewsManagementPage'
@@ -73,6 +74,7 @@ function App() {
                       <Route path="hotels" element={<HotelsManagementPage />} />
                       <Route path="hotels/:hotelId/rooms" element={<AdminRoomsManagementPage />} />
                       <Route path="attractions" element={<AttractionsManagementPage />} />
+                      <Route path="restaurants" element={<RestaurantsManagementPage />} />
                       <Route path="bookings" element={<BookingsManagementPage />} />
                       <Route path="users" element={<UsersManagementPage />} />
                       <Route path="reviews" element={<ReviewsManagementPage />} />

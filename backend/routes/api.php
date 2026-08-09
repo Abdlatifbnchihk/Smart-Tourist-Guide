@@ -82,6 +82,9 @@ Route::prefix('v1')->group(function () {
             Route::get('trashed/rooms', [AdminController::class, 'trashedRooms']);
             Route::post('trashed/rooms/{id}/restore', [AdminController::class, 'restoreRoom']);
             Route::delete('trashed/rooms/{id}/force', [AdminController::class, 'forceDeleteRoom']);
+
+            // Admin restaurant routes
+            Route::apiResource('restaurants', \App\Http\Controllers\Api\V1\Catalog\RestaurantController::class);
         });
 
         // Catalog routes
