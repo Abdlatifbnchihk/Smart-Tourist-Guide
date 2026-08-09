@@ -7,6 +7,14 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class AttractionResource extends JsonResource
 {
+    protected $isFavorite;
+
+    public function __construct($resource, $isFavorite = false)
+    {
+        parent::__construct($resource);
+        $this->isFavorite = $isFavorite;
+    }
+
     public function toArray(Request $request): array
     {
         return [
@@ -27,9 +35,10 @@ class AttractionResource extends JsonResource
                 if ($reviews->isEmpty()) {
                     return null;
                 }
-
                 return round($reviews->avg('rating'), 1);
             }),
+            'reviews_count' => $this->whenCounted('reviews'),
+            'is_favorite' => $this->isFavorite,
         ];
     }
 }

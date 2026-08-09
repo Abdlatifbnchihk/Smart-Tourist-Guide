@@ -7,6 +7,7 @@ use App\Http\Requests\StoreAttractionRequest;
 use App\Http\Requests\UpdateAttractionRequest;
 use App\Http\Resources\AttractionResource;
 use App\Models\Attraction;
+use App\Models\Favorite;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -21,17 +22,14 @@ class AttractionController extends Controller
     {
         $query = Attraction::query();
 
-        // Filter by city_id
         if ($request->has('city_id')) {
             $query->where('city_id', $request->city_id);
         }
 
-        // Filter by category
         if ($request->has('category')) {
             $query->where('category', $request->category);
         }
 
-        // Filter by price range
         if ($request->has('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
@@ -39,7 +37,6 @@ class AttractionController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        // Filter by rating (requires join with reviews)
         if ($request->has('min_rating')) {
             $query->whereHas('reviews', function ($q) use ($request) {
                 $q->groupBy('attraction_id')
@@ -47,17 +44,33 @@ class AttractionController extends Controller
             });
         }
 
-        // Search by name
         if ($request->has('search')) {
             $query->where('name', 'LIKE', '%'.$request->search.'%');
         }
 
-        // Eager load city relationship
-        $query->with('city');
+        $query->with('city', 'reviews');
 
-        // Paginate results
         $perPage = $request->get('per_page', 15);
         $attractions = $query->paginate($perPage);
+
+        $user = $request->user();
+        $favoriteIds = [];
+        if ($user) {
+            $favoriteIds = Favorite::where('user_id', $user->id)
+                ->whereNotNull('attraction_id')
+                ->pluck('attraction_id')
+                ->toArray();
+        }
+
+        $resource = AttractionResource::collection($attractions);
+
+        if ($user) {
+            $resource->additional(['is_favorite_map' => []]);
+            $attractions->getCollection()->transform(function ($attraction) use ($favoriteIds) {
+                $attraction->is_favorite = in_array($attraction->id, $favoriteIds);
+                return $attraction;
+            });
+        }
 
         return AttractionResource::collection($attractions);
     }
@@ -69,10 +82,8 @@ class AttractionController extends Controller
     {
         $validated = $request->validated();
 
-        // Auto-generate slug from name
         $validated['slug'] = Str::slug($validated['name']);
 
-        // Ensure slug uniqueness
         $originalSlug = $validated['slug'];
         $counter = 1;
 
@@ -81,7 +92,6 @@ class AttractionController extends Controller
             $counter++;
         }
 
-        // Set the creator
         $validated['created_by'] = $request->user()->id;
 
         $attraction = Attraction::create($validated);
@@ -95,11 +105,18 @@ class AttractionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Attraction $attraction)
+    public function show(Request $request, $id)
     {
-        $attraction->load(['city', 'reviews.user']);
+        $attraction = Attraction::with(['city', 'reviews.user'])->findOrFail($id);
 
-        return new AttractionResource($attraction);
+        $isFavorite = false;
+        if ($request->user()) {
+            $isFavorite = Favorite::where('user_id', $request->user()->id)
+                ->where('attraction_id', $attraction->id)
+                ->exists();
+        }
+
+        return new AttractionResource($attraction, $isFavorite);
     }
 
     /**
@@ -107,7 +124,6 @@ class AttractionController extends Controller
      */
     public function update(UpdateAttractionRequest $request, Attraction $attraction): JsonResponse
     {
-        // Check ownership or admin role
         if ($request->user()->id !== $attraction->created_by && $request->user()->role !== 'administrator') {
             return response()->json([
                 'message' => 'You are not authorized to update this attraction',
@@ -116,11 +132,9 @@ class AttractionController extends Controller
 
         $validated = $request->validated();
 
-        // Auto-generate slug from name if name changed
         if (isset($validated['name']) && $validated['name'] !== $attraction->name) {
             $validated['slug'] = Str::slug($validated['name']);
 
-            // Ensure slug uniqueness
             $originalSlug = $validated['slug'];
             $counter = 1;
             while (Attraction::where('slug', $validated['slug'])->where('id', '!=', $attraction->id)->exists()) {
@@ -142,7 +156,6 @@ class AttractionController extends Controller
      */
     public function destroy(Attraction $attraction, Request $request): JsonResponse
     {
-        // Check ownership or admin role
         if ($request->user()->id !== $attraction->created_by && $request->user()->role !== 'administrator') {
             return response()->json([
                 'message' => 'You are not authorized to delete this attraction',
