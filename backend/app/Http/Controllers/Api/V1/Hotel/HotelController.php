@@ -47,12 +47,26 @@ class HotelController extends Controller
             $query->where('name', 'LIKE', '%'.$request->search.'%');
         }
 
-        // Eager load city relationship and rooms count
-        $query->with('city')->withCount('rooms');
+        // Eager load city relationship, rooms count, and reviews
+        $query->with('city', 'reviews')->withCount('rooms');
 
         // Paginate results
         $perPage = $request->get('per_page', 15);
         $hotels = $query->paginate($perPage);
+
+        $user = $request->user();
+        $favoriteIds = [];
+        if ($user) {
+            $favoriteIds = \App\Models\Favorite::where('user_id', $user->id)
+                ->whereNotNull('hotel_id')
+                ->pluck('hotel_id')
+                ->toArray();
+        }
+
+        $hotels->getCollection()->transform(function ($hotel) use ($favoriteIds) {
+            $hotel->is_favorite = in_array($hotel->id, $favoriteIds);
+            return $hotel;
+        });
 
         return HotelResource::collection($hotels);
     }

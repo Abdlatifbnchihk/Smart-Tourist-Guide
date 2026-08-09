@@ -1,5 +1,17 @@
 import apiClient from './apiClient'
 
+export async function getHotels(filters = {}) {
+  const params = new URLSearchParams()
+  if (filters.city_id) params.append('city_id', filters.city_id)
+  if (filters.star_rating) params.append('star_rating', filters.star_rating)
+  if (filters.search) params.append('search', filters.search)
+
+  const queryString = params.toString()
+  const url = `/hotels${queryString ? `?${queryString}` : ''}`
+  const response = await apiClient.get(url)
+  return response.data.data || response.data || []
+}
+
 export async function getHotel(id) {
   const response = await apiClient.get(`/hotels/${id}`)
   return response.data

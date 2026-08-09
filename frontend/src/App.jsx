@@ -34,6 +34,7 @@ import HotelDetailPage from './pages/hotels/HotelDetailPage'
 import RoomSelectionPage from './pages/hotels/RoomSelectionPage'
 import AttractionDetailPage from './pages/attractions/AttractionDetailPage'
 import AttractionsPage from './pages/AttractionsPage'
+import HotelsPage from './pages/HotelsPage'
 import RestaurantsPage from './pages/RestaurantsPage'
 import HotelBookingCheckout from './pages/booking/HotelBookingCheckout'
 import TransportBookingCheckout from './pages/booking/TransportBookingCheckout'
@@ -187,6 +188,18 @@ function App() {
                   <Navbar />
                   <main className="flex-1">
                     <AttractionsPage />
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/hotels"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-1">
+                    <HotelsPage />
                   </main>
                   <Footer />
                 </>

@@ -41,6 +41,7 @@ class HotelResource extends JsonResource
 
                 return round($reviews->avg('rating'), 1);
             }),
+            'reviews_count' => $this->whenCounted('reviews'),
             'is_favorite' => $this->isFavorite,
         ];
     }
