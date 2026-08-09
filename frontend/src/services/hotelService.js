@@ -18,12 +18,7 @@ export async function getRooms(hotelId, filters = {}) {
   return response.data
 }
 
-export async function addFavorite(hotelId) {
-  const response = await apiClient.post(`/hotels/${hotelId}/favorites`)
-  return response.data
-}
-
-export async function removeFavorite(hotelId) {
-  const response = await apiClient.delete(`/hotels/${hotelId}/favorites`)
+export async function toggleHotelFavorite(hotelId) {
+  const response = await apiClient.post('/favorites/toggle', { type: 'hotel', id: parseInt(hotelId, 10) })
   return response.data
 }

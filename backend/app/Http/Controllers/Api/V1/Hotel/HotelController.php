@@ -78,11 +78,18 @@ class HotelController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Hotel $hotel)
+    public function show(Hotel $hotel, Request $request)
     {
         $hotel->load(['city', 'rooms', 'reviews.user']);
 
-        return new HotelResource($hotel);
+        $isFavorite = false;
+        if ($request->user()) {
+            $isFavorite = \App\Models\Favorite::where('user_id', $request->user()->id)
+                ->where('hotel_id', $hotel->id)
+                ->exists();
+        }
+
+        return new HotelResource($hotel, $isFavorite);
     }
 
     /**

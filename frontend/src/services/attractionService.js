@@ -17,7 +17,7 @@ export async function getAttractions(filters = {}) {
   const queryString = params.toString()
   const url = `/attractions${queryString ? `?${queryString}` : ''}`
   const response = await apiClient.get(url)
-  return response.data
+  return response.data.data || response.data || []
 }
 
 export async function createAttraction(data) {
@@ -36,9 +36,9 @@ export async function deleteAttraction(id) {
 }
 
 export async function toggleFavoriteAttraction(attractionId) {
-  const response = await apiClient.post('/favorites', {
+  const response = await apiClient.post('/favorites/toggle', {
     type: 'attraction',
-    id: attractionId,
+    id: parseInt(attractionId, 10),
   })
   return response.data
 }

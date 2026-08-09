@@ -35,6 +35,7 @@ import MyHotelBookingsPage from './pages/my-bookings/MyHotelBookingsPage'
 import MyTransportBookingsPage from './pages/my-bookings/MyTransportBookingsPage'
 import BookingDetailPage from './pages/my-bookings/BookingDetailPage'
 import FavoritesPage from './pages/favorites/FavoritesPage'
+import WriteReviewPage from './pages/reviews/WriteReviewPage'
 import MyReviewsPage from './pages/my-reviews/MyReviewsPage'
 import { ProtectedRoute, AdminRoute } from './context/AuthContext'
 import DriverLayout from './components/driver/DriverLayout'
@@ -260,6 +261,20 @@ function App() {
                   <main className="flex-1">
                     <ProtectedRoute>
                       <FavoritesPage />
+                    </ProtectedRoute>
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/reviews/new"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-1">
+                    <ProtectedRoute>
+                      <WriteReviewPage />
                     </ProtectedRoute>
                   </main>
                   <Footer />

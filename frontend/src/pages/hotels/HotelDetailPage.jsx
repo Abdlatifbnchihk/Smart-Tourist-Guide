@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
-import { getHotel, addFavorite, removeFavorite } from '../../services/hotelService'
+import { getHotel, toggleHotelFavorite } from '../../services/hotelService'
+import RatingDisplay from '../../components/reviews/RatingDisplay'
 
 export default function HotelDetailPage() {
   const { id } = useParams()
@@ -16,9 +17,13 @@ export default function HotelDetailPage() {
   })
 
   const favoriteMutation = useMutation({
-    mutationFn: () => hotel.is_favorite ? removeFavorite(id) : addFavorite(id),
+    mutationFn: () => toggleHotelFavorite(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['hotel', id])
+      queryClient.invalidateQueries(['favorites'])
+    },
+    onError: (error) => {
+      console.error('Failed to toggle favorite:', error)
     },
   })
 
@@ -82,7 +87,7 @@ export default function HotelDetailPage() {
               <h1 className="text-3xl md:text-4xl font-bold mb-2">{hotel.name}</h1>
               <div className="flex items-center gap-4 text-white/90">
                 <span className="flex items-center gap-1">
-                  {'★'.repeat(hotel.stars)}
+                  <RatingDisplay rating={hotel.stars} size="sm" showValue={false} />
                 </span>
                 {averageRating && (
                   <span className="flex items-center gap-1">
@@ -130,7 +135,9 @@ export default function HotelDetailPage() {
                         <div key={review.id} className="bg-slate-50 rounded-lg p-4">
                           <div className="flex items-center justify-between mb-2">
                             <span className="font-medium text-slate-800">{review.user_name}</span>
-                            <span className="text-yellow-500">{'★'.repeat(review.rating)}</span>
+                            <span className="text-yellow-500">
+                              <RatingDisplay rating={review.rating} size="sm" showValue={false} />
+                            </span>
                           </div>
                           <p className="text-slate-600">{review.comment}</p>
                         </div>
