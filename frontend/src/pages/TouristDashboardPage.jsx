@@ -196,7 +196,7 @@ export default function TouristDashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-slate-800 truncate">
-                        {booking.room?.hotel?.name || booking.driver?.user ? `${booking.driver.user.first_name} ${booking.driver.user.last_name}` : 'Booking'}
+                        {booking.room?.hotel?.name || (booking.driver?.user ? `${booking.driver.user.first_name} ${booking.driver.user.last_name}` : 'Booking')}
                       </p>
                       <p className="text-xs text-slate-400">
                         {new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()}
