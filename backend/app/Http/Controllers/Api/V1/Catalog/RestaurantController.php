@@ -18,9 +18,20 @@ class RestaurantController extends Controller
      */
     public function index(Request $request)
     {
-        $restaurants = Restaurant::all();
+        $restaurants = Restaurant::with('city', 'reviews')->get();
 
-        return RestaurantResource::collection($restaurants);
+        $user = $request->user();
+        $favoriteIds = [];
+        if ($user) {
+            $favoriteIds = $user->favorites()->whereNotNull('restaurant_id')->pluck('restaurant_id')->toArray();
+        }
+
+        return RestaurantResource::collection(
+            $restaurants->map(function ($restaurant) use ($favoriteIds) {
+                $restaurant->is_favorite = in_array($restaurant->id, $favoriteIds);
+                return $restaurant;
+            })
+        );
     }
 
     /**
@@ -39,11 +50,18 @@ class RestaurantController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Restaurant $restaurant)
+    public function show(Request $request, $id)
     {
-        $restaurant->load('city');
+        $restaurant = Restaurant::with('city', 'reviews')->findOrFail($id);
 
-        return new RestaurantResource($restaurant);
+        $isFavorite = false;
+        if ($request->user()) {
+            $isFavorite = \App\Models\Favorite::where('user_id', $request->user()->id)
+                ->where('restaurant_id', $restaurant->id)
+                ->exists();
+        }
+
+        return new RestaurantResource($restaurant, $isFavorite);
     }
 
     /**

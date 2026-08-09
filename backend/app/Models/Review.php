@@ -20,6 +20,7 @@ class Review extends Model
         'hotel_id',
         'driver_id',
         'attraction_id',
+        'restaurant_id',
         'rating',
         'comment',
     ];
@@ -51,5 +52,10 @@ class Review extends Model
     public function attraction(): BelongsTo
     {
         return $this->belongsTo(Attraction::class, 'attraction_id');
+    }
+
+    public function restaurant(): BelongsTo
+    {
+        return $this->belongsTo(Restaurant::class, 'restaurant_id');
     }
 }

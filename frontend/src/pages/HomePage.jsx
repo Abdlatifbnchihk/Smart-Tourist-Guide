@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import CityCard from '../components/ui/CityCard'
 import AttractionCard from '../components/ui/AttractionCard'
+import RestaurantCard from '../components/ui/RestaurantCard'
 import FeatureCard from '../components/ui/FeatureCard'
 import SearchBar from '../components/ui/SearchBar'
 import { getCities } from '../services/cityService'
 import { getAttractions } from '../services/attractionService'
+import { getRestaurants } from '../services/restaurantService'
 
 const aiFeatures = [
   {
@@ -74,8 +76,11 @@ const features = [
 export default function HomePage() {
   const navigate = useNavigate()
   const scrollRef = useRef(null)
+  const restaurantScrollRef = useRef(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
+  const [canRestScrollLeft, setCanRestScrollLeft] = useState(false)
+  const [canRestScrollRight, setCanRestScrollRight] = useState(true)
 
   const { data: cities = [], isLoading: citiesLoading } = useQuery({
     queryKey: ['cities'],
@@ -87,6 +92,11 @@ export default function HomePage() {
     queryFn: getAttractions,
   })
 
+  const { data: restaurants = [], isLoading: restaurantsLoading } = useQuery({
+    queryKey: ['restaurants'],
+    queryFn: getRestaurants,
+  })
+
   const handleSearch = (query) => {
     navigate(`/cities?search=${encodeURIComponent(query)}`)
   }
@@ -96,6 +106,11 @@ export default function HomePage() {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
       setCanScrollLeft(scrollLeft > 10)
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
+    }
+    if (restaurantScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = restaurantScrollRef.current
+      setCanRestScrollLeft(scrollLeft > 10)
+      setCanRestScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
     }
   }
 
@@ -112,6 +127,16 @@ export default function HomePage() {
     if (scrollRef.current) {
       const cardWidth = 288 + 20
       scrollRef.current.scrollBy({
+        left: direction === 'left' ? -cardWidth : cardWidth,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  const scrollRestaurants = (direction) => {
+    if (restaurantScrollRef.current) {
+      const cardWidth = 288 + 20
+      restaurantScrollRef.current.scrollBy({
         left: direction === 'left' ? -cardWidth : cardWidth,
         behavior: 'smooth',
       })
@@ -222,6 +247,69 @@ export default function HomePage() {
               attractions.map((attraction) => (
                 <div key={attraction.id} className="flex-shrink-0">
                   <AttractionCard attraction={attraction} />
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 px-4 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-2">Top Restaurants</h2>
+              <p className="text-slate-600">Savor authentic Moroccan cuisine</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => scrollRestaurants('left')}
+                disabled={!canRestScrollLeft}
+                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
+                  canRestScrollLeft
+                    ? 'border-slate-300 hover:bg-slate-100 text-slate-600'
+                    : 'border-slate-200 text-slate-300 cursor-not-allowed'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={() => scrollRestaurants('right')}
+                disabled={!canRestScrollRight}
+                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
+                  canRestScrollRight
+                    ? 'border-slate-300 hover:bg-slate-100 text-slate-600'
+                    : 'border-slate-200 text-slate-300 cursor-not-allowed'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div
+            ref={restaurantScrollRef}
+            className="flex gap-5 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
+          >
+            {restaurantsLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex-shrink-0 w-72 bg-white rounded-xl overflow-hidden shadow-sm animate-pulse">
+                  <div className="aspect-[4/3] bg-slate-200" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-5 bg-slate-200 rounded w-3/4" />
+                    <div className="h-4 bg-slate-200 rounded w-1/2" />
+                  </div>
+                </div>
+              ))
+            ) : restaurants.length === 0 ? (
+              <p className="text-slate-500 py-8">No restaurants found</p>
+            ) : (
+              restaurants.map((restaurant) => (
+                <div key={restaurant.restaurant_id} className="flex-shrink-0">
+                  <RestaurantCard restaurant={restaurant} />
                 </div>
               ))
             )}
