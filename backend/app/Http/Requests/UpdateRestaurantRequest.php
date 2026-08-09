@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Restaurant;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateRestaurantRequest extends FormRequest
@@ -13,7 +14,8 @@ class UpdateRestaurantRequest extends FormRequest
 
     public function rules(): array
     {
-        $restaurantId = $this->route('restaurant')->id;
+        $restaurant = $this->route('restaurant');
+        $restaurantId = is_object($restaurant) ? $restaurant->id : $restaurant;
 
         return [
             'city_id' => 'required|exists:cities,id',
