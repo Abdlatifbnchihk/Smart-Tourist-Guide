@@ -33,6 +33,7 @@ import HotelManagerDeletedPage from './pages/hotel-manager/DeletedItemsPage'
 import HotelDetailPage from './pages/hotels/HotelDetailPage'
 import RoomSelectionPage from './pages/hotels/RoomSelectionPage'
 import AttractionDetailPage from './pages/attractions/AttractionDetailPage'
+import RestaurantsPage from './pages/RestaurantsPage'
 import HotelBookingCheckout from './pages/booking/HotelBookingCheckout'
 import TransportBookingCheckout from './pages/booking/TransportBookingCheckout'
 import MyHotelBookingsPage from './pages/my-bookings/MyHotelBookingsPage'
@@ -186,6 +187,18 @@ function App() {
                     <ProtectedRoute>
                       <AttractionDetailPage />
                     </ProtectedRoute>
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="/restaurants"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-1">
+                    <RestaurantsPage />
                   </main>
                   <Footer />
                 </>

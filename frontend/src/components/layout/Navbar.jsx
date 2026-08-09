@@ -7,6 +7,7 @@ const navLinks = [
   { name: 'Cities', path: '/cities' },
   { name: 'Hotels', path: '/hotels' },
   { name: 'Attractions', path: '/attractions' },
+  { name: 'Restaurants', path: '/restaurants' },
 ]
 
 export default function Navbar() {
