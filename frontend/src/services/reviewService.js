@@ -5,6 +5,11 @@ export async function getMyReviews() {
   return response.data
 }
 
+export async function createReview(data) {
+  const response = await apiClient.post('/reviews', data)
+  return response.data
+}
+
 export async function updateReview(id, data) {
   const response = await apiClient.put(`/reviews/${id}`, data)
   return response.data

@@ -7,6 +7,14 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class HotelResource extends JsonResource
 {
+    protected $isFavorite;
+
+    public function __construct($resource, $isFavorite = false)
+    {
+        parent::__construct($resource);
+        $this->isFavorite = $isFavorite;
+    }
+
     public function toArray(Request $request): array
     {
         return [
@@ -33,6 +41,7 @@ class HotelResource extends JsonResource
 
                 return round($reviews->avg('rating'), 1);
             }),
+            'is_favorite' => $this->isFavorite,
         ];
     }
 }

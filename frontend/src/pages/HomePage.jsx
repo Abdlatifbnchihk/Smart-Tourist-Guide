@@ -1,87 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import CityCard from '../components/ui/CityCard'
 import AttractionCard from '../components/ui/AttractionCard'
 import FeatureCard from '../components/ui/FeatureCard'
 import SearchBar from '../components/ui/SearchBar'
-
-const fakeCities = [
-  {
-    city_id: 1,
-    name: 'Marrakech',
-    region: 'Marrakech-Safi',
-    image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=800',
-    hotel_count: 12,
-    attraction_count: 8,
-  },
-  {
-    city_id: 2,
-    name: 'Fez',
-    region: 'Fes-Meknes',
-    image: 'https://images.unsplash.com/photo-1548018560-c7196e771570?w=800',
-    hotel_count: 8,
-    attraction_count: 6,
-  },
-  {
-    city_id: 3,
-    name: 'Chefchaouen',
-    region: 'Tanger-Tetouan',
-    image: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=800',
-    hotel_count: 5,
-    attraction_count: 4,
-  },
-]
-
-const fakeAttractions = [
-  {
-    attraction_id: 1,
-    name: 'Jardin Majorelle',
-    city_name: 'Marrakech',
-    image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400',
-    rating: 5,
-    price: 15,
-  },
-  {
-    attraction_id: 2,
-    name: 'Hassan II Mosque',
-    city_name: 'Casablanca',
-    image: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=400',
-    rating: 4,
-    price: 20,
-  },
-  {
-    attraction_id: 3,
-    name: 'Sahara Desert Tour',
-    city_name: 'Merzouga',
-    image: 'https://images.unsplash.com/photo-1509023464722-18d996393ca8?w=400',
-    rating: 5,
-    price: 85,
-  },
-  {
-    attraction_id: 4,
-    name: 'Ait Benhaddou',
-    city_name: 'Ouarzazate',
-    image: 'https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=400',
-    rating: 4,
-    price: null,
-  },
-  {
-    attraction_id: 5,
-    name: 'Blue Gate Fez',
-    city_name: 'Fez',
-    image: 'https://images.unsplash.com/photo-1548018560-c7196e771570?w=400',
-    rating: 5,
-    price: null,
-  },
-  {
-    attraction_id: 6,
-    name: 'Chefchaouen Medina',
-    city_name: 'Chefchaouen',
-    image: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=400',
-    rating: 4,
-    price: null,
-  },
-]
+import { getCities } from '../services/cityService'
+import { getAttractions } from '../services/attractionService'
 
 const aiFeatures = [
   {
@@ -152,6 +77,16 @@ export default function HomePage() {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
 
+  const { data: cities = [], isLoading: citiesLoading } = useQuery({
+    queryKey: ['cities'],
+    queryFn: getCities,
+  })
+
+  const { data: attractions = [], isLoading: attractionsLoading } = useQuery({
+    queryKey: ['attractions'],
+    queryFn: getAttractions,
+  })
+
   const handleSearch = (query) => {
     navigate(`/cities?search=${encodeURIComponent(query)}`)
   }
@@ -214,9 +149,21 @@ export default function HomePage() {
             <p className="text-slate-600">From ancient medinas to modern seaside resorts</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {fakeCities.map((city) => (
-              <CityCard key={city.city_id} city={city} />
-            ))}
+            {citiesLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse">
+                  <div className="aspect-[4/3] bg-slate-200" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-6 bg-slate-200 rounded w-1/2" />
+                    <div className="h-4 bg-slate-200 rounded w-1/3" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              cities.map((city) => (
+                <CityCard key={city.city_id} city={city} />
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -261,11 +208,23 @@ export default function HomePage() {
             ref={scrollRef}
             className="flex gap-5 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
           >
-            {fakeAttractions.map((attraction) => (
-              <div key={attraction.attraction_id} className="flex-shrink-0">
-                <AttractionCard attraction={attraction} />
-              </div>
-            ))}
+            {attractionsLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex-shrink-0 w-72 bg-white rounded-xl overflow-hidden shadow-sm animate-pulse">
+                  <div className="aspect-[4/3] bg-slate-200" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-5 bg-slate-200 rounded w-3/4" />
+                    <div className="h-4 bg-slate-200 rounded w-1/2" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              attractions.map((attraction) => (
+                <div key={attraction.id} className="flex-shrink-0">
+                  <AttractionCard attraction={attraction} />
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
