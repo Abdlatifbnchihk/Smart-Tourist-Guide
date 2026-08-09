@@ -38,6 +38,12 @@ class ReviewResource extends JsonResource
                     'name' => $this->attraction->name,
                 ];
             }),
+            'restaurant' => $this->when($this->restaurant_id, function () {
+                return [
+                    'id' => $this->restaurant->id,
+                    'name' => $this->restaurant->name,
+                ];
+            }),
         ];
     }
 }

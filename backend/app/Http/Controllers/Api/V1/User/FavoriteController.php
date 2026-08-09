@@ -32,7 +32,7 @@ class FavoriteController extends Controller
         }
 
         $perPage = $request->get('per_page', 15);
-        $favorites = $query->paginate($perPage);
+        $favorites = $query->with(['hotel.city', 'attraction.city', 'restaurant.city'])->paginate($perPage);
 
         return FavoriteResource::collection($favorites);
     }

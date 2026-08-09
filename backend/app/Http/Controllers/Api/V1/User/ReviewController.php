@@ -36,7 +36,7 @@ class ReviewController extends Controller
             $query->where('attraction_id', $request->input('attraction_id'));
         }
 
-        $query->with(['user', 'hotel', 'driver', 'attraction']);
+        $query->with(['user', 'hotel', 'driver', 'attraction', 'restaurant']);
 
         $perPage = $request->get('per_page', 15);
         $reviews = $query->paginate($perPage);
@@ -57,7 +57,7 @@ class ReviewController extends Controller
 
             return response()->json([
                 'message' => 'Review created successfully',
-                'review' => new ReviewResource($review->load(['user', 'hotel', 'driver', 'attraction'])),
+                'review' => new ReviewResource($review->load(['user', 'hotel', 'driver', 'attraction', 'restaurant'])),
             ], Response::HTTP_CREATED);
         } catch (\DomainException $e) {
             return response()->json([
@@ -71,7 +71,7 @@ class ReviewController extends Controller
      */
     public function show(Review $review)
     {
-        return new ReviewResource($review->load(['user', 'hotel', 'driver', 'attraction']));
+        return new ReviewResource($review->load(['user', 'hotel', 'driver', 'attraction', 'restaurant']));
     }
 
     /**
@@ -89,7 +89,7 @@ class ReviewController extends Controller
 
             return response()->json([
                 'message' => 'Review updated successfully',
-                'review' => new ReviewResource($review->fresh(['user', 'hotel', 'driver', 'attraction'])),
+                'review' => new ReviewResource($review->fresh(['user', 'hotel', 'driver', 'attraction', 'restaurant'])),
             ]);
         } catch (\RuntimeException $e) {
             return response()->json([

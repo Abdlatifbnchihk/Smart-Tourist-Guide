@@ -178,13 +178,6 @@ export default function Navbar() {
                           My Dashboard
                         </Link>
                         <Link
-                          to="/profile"
-                          onClick={() => setDropdownOpen(false)}
-                          className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                        >
-                          My Profile
-                        </Link>
-                        <Link
                           to="/my-bookings/hotel"
                           onClick={() => setDropdownOpen(false)}
                           className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"

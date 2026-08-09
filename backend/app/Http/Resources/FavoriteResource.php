@@ -15,6 +15,9 @@ class FavoriteResource extends JsonResource
             'hotel_id' => $this->hotel_id,
             'attraction_id' => $this->attraction_id,
             'restaurant_id' => $this->restaurant_id,
+            'hotel' => new HotelResource($this->whenLoaded('hotel')),
+            'attraction' => new AttractionResource($this->whenLoaded('attraction')),
+            'restaurant' => new RestaurantResource($this->whenLoaded('restaurant')),
         ];
     }
 }
