@@ -291,7 +291,7 @@ export default function RestaurantsManagementPage() {
                   >
                     <option value="">Select city</option>
                     {cities.map((city) => (
-                      <option key={city.id} value={city.id}>{city.name}</option>
+                      <option key={city.city_id || city.id} value={city.city_id || city.id}>{city.name}</option>
                     ))}
                   </select>
                   {formErrors.city_id && <p className="mt-1 text-sm text-red-600">{formErrors.city_id}</p>}

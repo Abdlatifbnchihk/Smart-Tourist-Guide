@@ -540,7 +540,7 @@ export default function UsersManagementPage() {
                     >
                       <option value="">Select city</option>
                       {cities.map((city) => (
-                        <option key={city.id} value={city.id}>{city.name}</option>
+                        <option key={city.city_id || city.id} value={city.city_id || city.id}>{city.name}</option>
                       ))}
                     </select>
                   </div>
