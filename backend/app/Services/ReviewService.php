@@ -58,8 +58,9 @@ class ReviewService
 
     public function delete(Review $review, int $userId): void
     {
-        // Validate ownership
-        if ((int) $review->user_id !== $userId) {
+        // Allow admin to delete any review
+        $user = \App\Models\User::find($userId);
+        if ((int) $review->user_id !== $userId && (!$user || $user->role !== 'administrator')) {
             throw new RuntimeException('Unauthorized');
         }
 

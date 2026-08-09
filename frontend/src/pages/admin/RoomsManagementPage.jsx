@@ -97,6 +97,7 @@ export default function RoomsManagementPage() {
     try {
       const payload = {
         ...form,
+        hotel_id: parseInt(hotelId),
         price_per_night: parseFloat(form.price_per_night),
         capacity: parseInt(form.capacity),
       }

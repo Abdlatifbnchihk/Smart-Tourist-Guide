@@ -36,7 +36,8 @@ class RoomController extends Controller
 
     public function show(Room $room, Request $request)
     {
-        if ($room->hotel->created_by !== $request->user()->id) {
+        $user = $request->user();
+        if ($room->hotel->created_by !== $user->id && !in_array($user->role, ['administrator', 'hotel_manager'])) {
             return response()->json([
                 'message' => 'You are not authorized to view this room',
             ], Response::HTTP_FORBIDDEN);
@@ -47,7 +48,8 @@ class RoomController extends Controller
 
     public function update(UpdateRoomRequest $request, Room $room): JsonResponse
     {
-        if ($room->hotel->created_by !== $request->user()->id) {
+        $user = $request->user();
+        if ($room->hotel->created_by !== $user->id && !in_array($user->role, ['administrator', 'hotel_manager'])) {
             return response()->json([
                 'message' => 'You are not authorized to update this room',
             ], Response::HTTP_FORBIDDEN);
@@ -64,7 +66,8 @@ class RoomController extends Controller
 
     public function destroy(Room $room, Request $request): JsonResponse
     {
-        if ($room->hotel->created_by !== $request->user()->id) {
+        $user = $request->user();
+        if ($room->hotel->created_by !== $user->id && !in_array($user->role, ['administrator', 'hotel_manager'])) {
             return response()->json([
                 'message' => 'You are not authorized to delete this room',
             ], Response::HTTP_FORBIDDEN);
@@ -81,7 +84,8 @@ class RoomController extends Controller
     {
         $room = Room::withTrashed()->findOrFail($room);
 
-        if ($room->hotel->created_by !== $request->user()->id) {
+        $user = $request->user();
+        if ($room->hotel->created_by !== $user->id && !in_array($user->role, ['administrator', 'hotel_manager'])) {
             return response()->json([
                 'message' => 'You are not authorized to restore this room',
             ], Response::HTTP_FORBIDDEN);
@@ -99,7 +103,8 @@ class RoomController extends Controller
     {
         $room = Room::withTrashed()->findOrFail($room);
 
-        if ($room->hotel->created_by !== $request->user()->id) {
+        $user = $request->user();
+        if ($room->hotel->created_by !== $user->id && !in_array($user->role, ['administrator', 'hotel_manager'])) {
             return response()->json([
                 'message' => 'You are not authorized to permanently delete this room',
             ], Response::HTTP_FORBIDDEN);

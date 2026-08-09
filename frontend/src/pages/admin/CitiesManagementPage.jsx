@@ -27,7 +27,7 @@ export default function CitiesManagementPage() {
   const fetchCities = async () => {
     try {
       const res = await apiClient.get('/cities')
-      setCities(res.data.data || [])
+      setCities(res.data.data || res.data || [])
     } catch (err) {
       setError('Failed to load cities.')
     } finally {

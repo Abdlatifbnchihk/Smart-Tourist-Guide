@@ -19,8 +19,8 @@ class StoreUserRequest extends FormRequest
             'email' => 'required|email|max:150|unique:users,email',
             'phone' => 'required|string|max:20|unique:users,phone',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:Tourist,Driver,Hotel Manager,Administrator',
-            'status' => 'sometimes|in:Pending,Approved,Rejected,Suspended',
+            'role' => 'required|string|in:Tourist,Driver,Hotel Manager,Administrator,tourist,driver,hotel_manager,administrator',
+            'status' => 'sometimes|string|in:Pending,Approved,Rejected,Suspended,pending,approved,rejected,suspended',
         ];
 
         if ($this->input('role') === 'Driver') {

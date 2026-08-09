@@ -74,6 +74,14 @@ Route::prefix('v1')->group(function () {
             Route::get('transport-bookings', [TransportBookingController::class, 'adminIndex']);
             Route::delete('transport-bookings/{booking}', [TransportBookingController::class, 'adminDestroy']);
             Route::patch('transport-bookings/{booking}/status', [TransportBookingController::class, 'adminUpdateStatus']);
+
+            // Admin trashed items routes
+            Route::get('trashed/hotels', [AdminController::class, 'trashedHotels']);
+            Route::post('trashed/hotels/{id}/restore', [AdminController::class, 'restoreHotel']);
+            Route::delete('trashed/hotels/{id}/force', [AdminController::class, 'forceDeleteHotel']);
+            Route::get('trashed/rooms', [AdminController::class, 'trashedRooms']);
+            Route::post('trashed/rooms/{id}/restore', [AdminController::class, 'restoreRoom']);
+            Route::delete('trashed/rooms/{id}/force', [AdminController::class, 'forceDeleteRoom']);
         });
 
         // Catalog routes

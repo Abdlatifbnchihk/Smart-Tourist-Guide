@@ -6,7 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateAdminUserRequest;
 use App\Http\Resources\AdminUserResource;
+use App\Http\Resources\HotelResource;
+use App\Http\Resources\RoomResource;
 use App\Models\Driver;
+use App\Models\Hotel;
+use App\Models\Room;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -47,7 +51,16 @@ class AdminController extends Controller
     public function store(StoreUserRequest $request): JsonResponse
     {
         $data = $request->validated();
+
+        $roleMap = [
+            'Tourist' => 'tourist',
+            'Driver' => 'driver',
+            'Hotel Manager' => 'hotel_manager',
+            'Administrator' => 'administrator',
+        ];
+        $data['role'] = $roleMap[$data['role']] ?? $data['role'];
         $data['status'] = $data['status'] ?? 'Pending';
+
         $user = User::create($data);
 
         if ($request->role === 'Driver') {
@@ -75,7 +88,29 @@ class AdminController extends Controller
 
     public function update(UpdateAdminUserRequest $request, User $user): JsonResponse
     {
-        $user->update($request->validated());
+        $data = $request->validated();
+
+        if (isset($data['role'])) {
+            $roleMap = [
+                'Tourist' => 'tourist',
+                'Driver' => 'driver',
+                'Hotel Manager' => 'hotel_manager',
+                'Administrator' => 'administrator',
+            ];
+            $data['role'] = $roleMap[$data['role']] ?? $data['role'];
+        }
+
+        if (isset($data['status'])) {
+            $statusMap = [
+                'Pending' => 'Pending',
+                'Approved' => 'Approved',
+                'Rejected' => 'Rejected',
+                'Suspended' => 'Suspended',
+            ];
+            $data['status'] = $statusMap[$data['status']] ?? $data['status'];
+        }
+
+        $user->update($data);
 
         return response()->json([
             'message' => 'User updated successfully',
@@ -127,5 +162,68 @@ class AdminController extends Controller
         ];
 
         return response()->json(['data' => $stats]);
+    }
+
+    public function trashedHotels(Request $request): AnonymousResourceCollection
+    {
+        $hotels = Hotel::onlyTrashed()
+            ->with('city')
+            ->withCount('rooms')
+            ->latest('deleted_at')
+            ->paginate(15);
+
+        return HotelResource::collection($hotels);
+    }
+
+    public function restoreHotel(string $id): JsonResponse
+    {
+        $hotel = Hotel::withTrashed()->findOrFail($id);
+        $hotel->restore();
+
+        return response()->json([
+            'message' => 'Hotel restored successfully',
+            'hotel' => new HotelResource($hotel->load('city')),
+        ]);
+    }
+
+    public function forceDeleteHotel(string $id): JsonResponse
+    {
+        $hotel = Hotel::withTrashed()->findOrFail($id);
+        $hotel->forceDelete();
+
+        return response()->json([
+            'message' => 'Hotel permanently deleted',
+        ]);
+    }
+
+    public function trashedRooms(Request $request): AnonymousResourceCollection
+    {
+        $rooms = Room::onlyTrashed()
+            ->with('hotel')
+            ->latest('deleted_at')
+            ->paginate(15);
+
+        return RoomResource::collection($rooms);
+    }
+
+    public function restoreRoom(string $id): JsonResponse
+    {
+        $room = Room::withTrashed()->findOrFail($id);
+        $room->restore();
+
+        return response()->json([
+            'message' => 'Room restored successfully',
+            'room' => new RoomResource($room->load('hotel')),
+        ]);
+    }
+
+    public function forceDeleteRoom(string $id): JsonResponse
+    {
+        $room = Room::withTrashed()->findOrFail($id);
+        $room->forceDelete();
+
+        return response()->json([
+            'message' => 'Room permanently deleted',
+        ]);
     }
 }

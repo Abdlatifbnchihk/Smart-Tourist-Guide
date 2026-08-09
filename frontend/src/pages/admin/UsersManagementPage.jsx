@@ -5,6 +5,10 @@ import Skeleton from '../../components/ui/Skeleton'
 const roles = ['Tourist', 'Driver', 'Hotel Manager', 'Administrator']
 const statuses = ['Pending', 'Approved', 'Rejected', 'Suspended']
 
+const roleToLabel = { tourist: 'Tourist', driver: 'Driver', hotel_manager: 'Hotel Manager', administrator: 'Administrator' }
+const labelToRole = { Tourist: 'tourist', Driver: 'driver', 'Hotel Manager': 'hotel_manager', Administrator: 'administrator' }
+const normalizeRole = (r) => roleToLabel[r] || r
+
 const emptyUser = {
   first_name: '',
   last_name: '',
@@ -63,7 +67,7 @@ export default function UsersManagementPage() {
     setLoading(true)
     try {
       const res = await getUsers({
-        role: roleFilter || undefined,
+        role: labelToRole[roleFilter] || roleFilter || undefined,
         status: statusFilter || undefined,
         active: activeFilter || undefined,
         search: search || undefined,
@@ -96,7 +100,7 @@ export default function UsersManagementPage() {
       phone: user.phone || '',
       password: '',
       password_confirmation: '',
-      role: user.role,
+      role: normalizeRole(user.role),
       status: user.status,
       city_id: user.driver?.city_id || '',
       license_number: user.driver?.license_number || '',
@@ -316,8 +320,8 @@ export default function UsersManagementPage() {
                     <td className="px-6 py-4 text-sm text-slate-600">{user.email}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{user.phone || '-'}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getRoleBadge(user.role)}`}>
-                        {user.role}
+                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getRoleBadge(normalizeRole(user.role))}`}>
+                        {normalizeRole(user.role)}
                       </span>
                     </td>
                     <td className="px-6 py-4">

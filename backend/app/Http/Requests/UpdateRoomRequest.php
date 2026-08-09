@@ -9,8 +9,7 @@ class UpdateRoomRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Route model binding resolves 'room' to a Room instance
-        $room = $this->route('room');
+        $room = $this->route('room') ?? ($this->route('id') ? \App\Models\Room::find($this->route('id')) : null);
 
         if (!$room || !$room instanceof Room) {
             return false;
@@ -22,15 +21,14 @@ class UpdateRoomRequest extends FormRequest
 
         $user = $this->user();
         
-        // Allow if user is the hotel creator, admin, or hotel_manager
         return $room->hotel->created_by === $user->id || 
                in_array($user->role, ['administrator', 'hotel_manager']);
     }
 
     public function rules(): array
     {
-        $room = $this->route('room');
-        $roomId = $room?->room_id;
+        $room = $this->route('room') ?? ($this->route('id') ? \App\Models\Room::find($this->route('id')) : null);
+        $roomId = $room?->room_id ?? $room?->id;
 
         return [
             'number' => [

@@ -34,7 +34,7 @@ export default function AttractionsManagementPage() {
     queryFn: () => getAttractions(filters),
   })
 
-  const attractions = response?.data || []
+  const attractions = response || []
 
   const createMutation = useMutation({
     mutationFn: createAttraction,

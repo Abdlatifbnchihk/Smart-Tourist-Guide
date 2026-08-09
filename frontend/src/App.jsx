@@ -20,6 +20,9 @@ import AdminRoomsManagementPage from './pages/admin/RoomsManagementPage'
 import AttractionsManagementPage from './pages/admin/AttractionsManagementPage'
 import BookingsManagementPage from './pages/admin/BookingsManagementPage'
 import UsersManagementPage from './pages/admin/UsersManagementPage'
+import ReviewsManagementPage from './pages/admin/ReviewsManagementPage'
+import SettingsPage from './pages/admin/SettingsPage'
+import DeletedItemsPage from './pages/admin/DeletedItemsPage'
 import HotelManagerDashboardPage from './pages/hotel-manager/HotelManagerDashboardPage'
 import HotelManagerHotelsPage from './pages/hotel-manager/HotelsManagementPage'
 import HotelManagerRoomsPage from './pages/hotel-manager/RoomsManagementPage'
@@ -72,6 +75,9 @@ function App() {
                       <Route path="attractions" element={<AttractionsManagementPage />} />
                       <Route path="bookings" element={<BookingsManagementPage />} />
                       <Route path="users" element={<UsersManagementPage />} />
+                      <Route path="reviews" element={<ReviewsManagementPage />} />
+                      <Route path="settings" element={<SettingsPage />} />
+                      <Route path="deleted" element={<DeletedItemsPage />} />
                     </Routes>
                   </AdminLayout>
                 </AdminRoute>
