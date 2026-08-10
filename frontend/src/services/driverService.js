@@ -8,6 +8,11 @@ export async function getDriverProfile(userId) {
   return response.data
 }
 
+export async function getOrCreateDriverProfile() {
+  const response = await apiClient.post('/drivers/profile')
+  return response.data
+}
+
 export async function getDriver(id) {
   const response = await apiClient.get(`/drivers/${id}`)
   return response.data

@@ -102,8 +102,27 @@ export async function getMyTransportBookings(filters = {}) {
   return response.data
 }
 
-export async function getMyBookingDetail(id) {
-  const response = await apiClient.get(`/hotel-bookings/${id}`)
+export async function getMyBookingDetail(id, type) {
+  if (type === 'transport') {
+    const response = await apiClient.get(`/transport-bookings/${id}`)
+    return response.data
+  }
+  if (type === 'hotel') {
+    const response = await apiClient.get(`/hotel-bookings/${id}`)
+    return response.data
+  }
+  // Try hotel first, then transport if not found
+  try {
+    const response = await apiClient.get(`/hotel-bookings/${id}`)
+    return response.data
+  } catch {
+    const response = await apiClient.get(`/transport-bookings/${id}`)
+    return response.data
+  }
+}
+
+export async function getMyTransportBookingDetail(id) {
+  const response = await apiClient.get(`/transport-bookings/${id}`)
   return response.data
 }
 

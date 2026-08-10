@@ -18,7 +18,7 @@ const emptyVehicle = {
 }
 
 export default function VehiclesManagementPage() {
-  const { driver } = useDriver()
+  const { driver, loading: driverLoading } = useDriver()
   const [vehicles, setVehicles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -35,8 +35,12 @@ export default function VehiclesManagementPage() {
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
-    fetchVehicles()
-  }, [])
+    if (driver?.id) {
+      fetchVehicles()
+    } else if (!driverLoading) {
+      setLoading(false)
+    }
+  }, [driver, driverLoading])
 
   const fetchVehicles = async () => {
     try {
@@ -82,8 +86,12 @@ export default function VehiclesManagementPage() {
         await updateVehicle(editingVehicle.id, formData)
         setSubmitSuccess('Vehicle updated successfully!')
       } else {
+        if (!driver?.id) {
+          setSubmitError('Driver profile not loaded. Please try again.')
+          return
+        }
         await createVehicle(driver.id, formData)
-        setSubmitSuccess(editingVehicle ? 'Vehicle updated successfully!' : 'Vehicle created successfully!')
+        setSubmitSuccess('Vehicle created successfully!')
       }
       await fetchVehicles()
       setTimeout(() => {

@@ -35,6 +35,9 @@ class TransportBookingController extends Controller
             $query->whereRaw('0 = 1');
         }
 
+        // Filter for transport bookings only (has driver_id, no room_id)
+        $query->whereNotNull('driver_id')->whereNull('room_id');
+
         if ($request->has('status') && $request->status !== '' && $request->status !== 'All') {
             $query->where('status', $request->status);
         }

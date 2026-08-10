@@ -38,6 +38,9 @@ class HotelBookingController extends Controller
             $query->whereRaw('0 = 1');
         }
 
+        // Filter for hotel bookings only (has room_id, no driver_id)
+        $query->whereNotNull('room_id')->whereNull('driver_id');
+
         // Eager load relationships
         $query->with(['user', 'room.hotel']);
 

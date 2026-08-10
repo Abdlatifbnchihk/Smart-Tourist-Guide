@@ -48,15 +48,29 @@ export default function MyTransportBookingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">My Transport Bookings</h2>
-        <p className="text-slate-500 mt-1">View and manage your transport reservations</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">My Transport Bookings</h2>
+          <p className="text-slate-500 mt-1">View and manage your transport reservations</p>
+        </div>
+        <Link
+          to="/booking/transport"
+          className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium text-sm"
+        >
+          Book Transport
+        </Link>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
         {bookings.length === 0 ? (
-          <div className="px-6 py-12 text-center text-slate-500">
-            No transport bookings found
+          <div className="px-6 py-12 text-center">
+            <p className="text-slate-500 mb-4">No transport bookings found</p>
+            <Link
+              to="/booking/transport"
+              className="inline-block px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium text-sm"
+            >
+              Book Your First Transport
+            </Link>
           </div>
         ) : (
           <table className="w-full">
@@ -90,7 +104,7 @@ export default function MyTransportBookingsPage() {
                   <td className="px-6 py-4 text-right font-medium text-slate-800">${booking.total_price}</td>
                   <td className="px-6 py-4 text-right">
                     <Link
-                      to={`/my-bookings/${booking.id}`}
+                      to={`/my-bookings/${booking.id}?type=transport`}
                       className="text-teal-600 hover:text-teal-700 font-medium text-sm mr-3"
                     >
                       View

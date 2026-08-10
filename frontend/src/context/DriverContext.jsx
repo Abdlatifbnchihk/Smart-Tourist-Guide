@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from './AuthContext'
-import { getDriverProfile } from '../services/driverService'
+import { getDriverProfile, getOrCreateDriverProfile } from '../services/driverService'
 
 const DriverContext = createContext(null)
 
@@ -26,6 +26,13 @@ export function DriverProvider({ children }) {
         const driverData = drivers[0]
         setDriver(driverData)
         setDriverId(driverData.id)
+      } else {
+        // Auto-create driver profile if missing
+        const newRes = await getOrCreateDriverProfile()
+        if (newRes.data) {
+          setDriver(newRes.data)
+          setDriverId(newRes.data.id)
+        }
       }
     } catch (err) {
       console.error('Failed to load driver profile:', err)

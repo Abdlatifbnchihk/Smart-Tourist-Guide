@@ -118,6 +118,9 @@ Route::prefix('v1')->group(function () {
         Route::put('rooms/{id}/restore', [RoomController::class, 'restore'])->middleware('role:administrator,hotel_manager');
         Route::delete('rooms/{id}/force', [RoomController::class, 'forceDestroy'])->middleware('role:administrator,hotel_manager');
 
+        // Driver profile - get or create (must be before apiResource to avoid conflict)
+        Route::post('drivers/profile', [DriverController::class, 'getOrCreateProfile'])->middleware('role:driver');
+
         Route::apiResource('drivers', DriverController::class)->except('destroy');
         Route::patch('drivers/{id}/verify', [DriverController::class, 'verify'])->middleware('role:administrator');
 

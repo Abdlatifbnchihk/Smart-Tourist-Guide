@@ -88,7 +88,7 @@ export default function MyHotelBookingsPage() {
                   <td className="px-6 py-4 text-right font-medium text-slate-800">${booking.total_price}</td>
                   <td className="px-6 py-4 text-right">
                     <Link
-                      to={`/my-bookings/${booking.id}`}
+                      to={`/my-bookings/${booking.id}?type=hotel`}
                       className="text-teal-600 hover:text-teal-700 font-medium text-sm mr-3"
                     >
                       View

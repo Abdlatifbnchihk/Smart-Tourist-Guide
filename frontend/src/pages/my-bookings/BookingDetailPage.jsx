@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMyBookingDetail, cancelMyHotelBooking, cancelMyTransportBooking } from '../../services/bookingService'
 import Skeleton from '../../components/ui/Skeleton'
@@ -14,19 +14,21 @@ const statusColors = {
 
 export default function BookingDetailPage() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const bookingType = searchParams.get('type')
   const queryClient = useQueryClient()
   const [showCancelModal, setShowCancelModal] = useState(false)
 
   const { data: response, isLoading, error } = useQuery({
-    queryKey: ['my-booking-detail', id],
-    queryFn: () => getMyBookingDetail(id),
+    queryKey: ['my-booking-detail', id, bookingType],
+    queryFn: () => getMyBookingDetail(id, bookingType),
   })
 
   const booking = response?.data
 
   const cancelMutation = useMutation({
     mutationFn: () => {
-      if (booking?.booking_type === 'Transport') {
+      if (booking?.booking_type === 'Hotel + Driver' || booking?.booking_type === 'Airport Transfer' || bookingType === 'transport') {
         return cancelMyTransportBooking(id)
       }
       return cancelMyHotelBooking(id)
@@ -66,7 +68,7 @@ export default function BookingDetailPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link
-          to={booking.booking_type === 'Transport' ? '/my-bookings/transport' : '/my-bookings/hotel'}
+          to={booking.booking_type === 'Hotel + Driver' || booking.booking_type === 'Airport Transfer' || bookingType === 'transport' ? '/my-bookings/transport' : '/my-bookings/hotel'}
           className="text-slate-400 hover:text-slate-600"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

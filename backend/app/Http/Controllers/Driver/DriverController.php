@@ -7,6 +7,7 @@ use App\Http\Requests\StoreDriverRequest;
 use App\Http\Requests\UpdateDriverRequest;
 use App\Http\Resources\DriverResource;
 use App\Models\Driver;
+use App\Models\City;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -28,16 +29,52 @@ class DriverController extends Controller
             $query->where('city_id', $request->city_id);
         }
 
-        if ($request->has('verified')) {
-            $query->where('is_verified', $request->boolean('verified'));
+        if ($request->has('is_verified') && $request->is_verified !== '') {
+            $query->where('is_verified', filter_var($request->is_verified, FILTER_VALIDATE_BOOLEAN));
         }
 
-        $query->with(['user', 'city']);
+        // Only show drivers with vehicles when browsing as tourist (no user_id filter)
+        if (!$request->has('user_id')) {
+            $query->has('vehicles');
+        }
 
-        $perPage = $request->get('per_page', 15);
-        $drivers = $query->paginate($perPage);
+        $query->with(['user', 'city', 'vehicles']);
+
+        $perPage = $request->get('per_page', 50);
+        $drivers = $query->get();
 
         return DriverResource::collection($drivers);
+    }
+
+    /**
+     * Get or create driver profile for authenticated user.
+     */
+    public function getOrCreateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'driver') {
+            return response()->json([
+                'message' => 'Only users with driver role can have a driver profile',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $driver = Driver::where('user_id', $user->id)->first();
+
+        if (!$driver) {
+            $cityId = City::first()?->id ?? 1;
+            $licenseNumber = strtoupper('DL-' . $user->id . '-' . uniqid());
+
+            $driver = Driver::create([
+                'user_id' => $user->id,
+                'city_id' => $cityId,
+                'license_number' => $licenseNumber,
+            ]);
+        }
+
+        return response()->json([
+            'data' => new DriverResource($driver->load(['user', 'city', 'vehicles'])),
+        ]);
     }
 
     /**

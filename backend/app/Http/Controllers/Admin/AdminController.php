@@ -12,6 +12,7 @@ use App\Models\Driver;
 use App\Models\Hotel;
 use App\Models\Room;
 use App\Models\User;
+use App\Models\City;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -64,12 +65,13 @@ class AdminController extends Controller
         $user = User::create($data);
 
         if ($request->role === 'Driver') {
+            $cityId = $request->city_id ?? City::first()?->id ?? 1;
+            $licenseNumber = $request->license_number ?? strtoupper(uniqid('DL-'));
+
             Driver::create([
                 'user_id' => $user->id,
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'city_id' => $request->city_id,
-                'license_number' => $request->license_number,
+                'city_id' => $cityId,
+                'license_number' => $licenseNumber,
             ]);
         }
 
@@ -111,6 +113,18 @@ class AdminController extends Controller
         }
 
         $user->update($data);
+
+        // Create driver profile if role changed to driver and no profile exists
+        if (($data['role'] ?? $user->role) === 'driver' && !$user->driver) {
+            $cityId = $request->city_id ?? City::first()?->id ?? 1;
+            $licenseNumber = $request->license_number ?? strtoupper(uniqid('DL-'));
+
+            Driver::create([
+                'user_id' => $user->id,
+                'city_id' => $cityId,
+                'license_number' => $licenseNumber,
+            ]);
+        }
 
         return response()->json([
             'message' => 'User updated successfully',

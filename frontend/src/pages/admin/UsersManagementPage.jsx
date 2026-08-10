@@ -57,7 +57,7 @@ export default function UsersManagementPage() {
   const fetchCities = async () => {
     try {
       const res = await getCities()
-      setCities(res.data || [])
+      setCities(Array.isArray(res) ? res : res.data || [])
     } catch (err) {
       console.error('Failed to load cities:', err)
     }
