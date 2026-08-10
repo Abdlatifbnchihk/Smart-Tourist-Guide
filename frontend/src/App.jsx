@@ -45,7 +45,7 @@ import FavoritesPage from './pages/favorites/FavoritesPage'
 import TouristDashboardPage from './pages/TouristDashboardPage'
 import WriteReviewPage from './pages/reviews/WriteReviewPage'
 import MyReviewsPage from './pages/my-reviews/MyReviewsPage'
-import { ProtectedRoute, AdminRoute } from './context/AuthContext'
+import { ProtectedRoute, AdminRoute, TouristRoute } from './context/AuthContext'
 import DriverLayout from './components/driver/DriverLayout'
 import { DriverProvider } from './context/DriverContext'
 import DriverDashboardPage from './pages/driver/DriverDashboardPage'
@@ -53,6 +53,7 @@ import DriverVehiclesPage from './pages/driver/VehiclesManagementPage'
 import DriverBookingsPage from './pages/driver/BookingsManagementPage'
 import DriverBookingDetailPage from './pages/driver/BookingDetailPage'
 import DriverProfilePage from './pages/driver/DriverProfilePage'
+import AiItineraryPage from './pages/ai/AiItineraryPage'
 
 const queryClient = new QueryClient()
 
@@ -355,6 +356,14 @@ function App() {
                   </main>
                   <Footer />
                 </>
+              }
+            />
+            <Route
+              path="/ai/itinerary"
+              element={
+                <TouristRoute>
+                  <AiItineraryPage />
+                </TouristRoute>
               }
             />
             <Route

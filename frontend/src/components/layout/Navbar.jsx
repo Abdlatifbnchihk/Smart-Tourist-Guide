@@ -8,6 +8,7 @@ const navLinks = [
   { name: 'Hotels', path: '/hotels' },
   { name: 'Attractions', path: '/attractions' },
   { name: 'Restaurants', path: '/restaurants' },
+  { name: 'AI Planner', path: '/ai/itinerary' },
 ]
 
 export default function Navbar() {
@@ -60,7 +61,9 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
+            {navLinks
+              .filter((link) => link.name !== 'AI Planner' || user?.role === 'tourist')
+              .map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
@@ -253,7 +256,9 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white">
           <div className="px-4 py-3 space-y-1">
-            {navLinks.map((link) => (
+            {navLinks
+              .filter((link) => link.name !== 'AI Planner' || user?.role === 'tourist')
+              .map((link) => (
               <Link
                 key={link.path}
                 to={link.path}

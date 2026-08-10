@@ -5,36 +5,54 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GenerateItineraryRequest;
 use App\Http\Resources\ItineraryResource;
-use App\Services\AiItineraryService;
+use App\Jobs\GenerateItineraryJob;
+use App\Models\ItineraryJob;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class AiController extends Controller
 {
-    public function __construct(
-        private AiItineraryService $itineraryService
-    ) {}
+    /**
+     * Generate an AI-powered itinerary (dispatches to queue).
+     */
+    public function generateItinerary(GenerateItineraryRequest $request): JsonResponse
+    {
+        $itineraryJob = ItineraryJob::create([
+            'user_id' => Auth::id(),
+            'request_data' => $request->validated(),
+            'status' => 'pending',
+        ]);
+
+        GenerateItineraryJob::dispatch($itineraryJob);
+
+        return response()->json([
+            'job_id' => $itineraryJob->id,
+            'status' => 'pending',
+            'message' => 'Itinerary generation started. Poll the status endpoint for updates.',
+        ], Response::HTTP_ACCEPTED);
+    }
 
     /**
-     * Generate an AI-powered itinerary.
+     * Check the status of an itinerary generation job.
      */
-    public function generateItinerary(GenerateItineraryRequest $request)
+    public function getJobStatus(ItineraryJob $itineraryJob): JsonResponse
     {
-        try {
-            $itinerary = $this->itineraryService->generate($request->validated());
-
-            return new ItineraryResource($itinerary);
-        } catch (\RuntimeException $e) {
-            $status = match (true) {
-                str_contains($e->getMessage(), 'GROQ_API_KEY') => Response::HTTP_INTERNAL_SERVER_ERROR,
-                str_contains($e->getMessage(), 'Rate limit') => Response::HTTP_TOO_MANY_REQUESTS,
-                str_contains($e->getMessage(), 'temporarily unavailable') => Response::HTTP_SERVICE_UNAVAILABLE,
-                default => Response::HTTP_INTERNAL_SERVER_ERROR,
-            };
-
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], $status);
+        if ($itineraryJob->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
         }
+
+        $response = [
+            'job_id' => $itineraryJob->id,
+            'status' => $itineraryJob->status,
+        ];
+
+        if ($itineraryJob->status === 'completed') {
+            $response['result'] = $itineraryJob->result;
+        } elseif ($itineraryJob->status === 'failed') {
+            $response['error'] = $itineraryJob->error;
+        }
+
+        return response()->json($response);
     }
 }

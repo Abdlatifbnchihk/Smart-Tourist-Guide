@@ -179,5 +179,6 @@ Route::prefix('v1')->group(function () {
 
         // AI routes
         Route::post('/ai/itinerary', [AiController::class, 'generateItinerary']);
+        Route::get('/ai/itinerary/{itineraryJob}/status', [AiController::class, 'getJobStatus']);
     });
 });
