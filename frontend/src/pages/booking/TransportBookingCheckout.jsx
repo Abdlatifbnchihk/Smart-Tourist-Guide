@@ -15,12 +15,12 @@ export default function TransportBookingCheckout() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(null)
 
-  const { data: driversResponse, isLoading: driversLoading } = useQuery({
+  const { data: driversResponse, isLoading: driversLoading, error: driversError } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => getDrivers(),
   })
 
-  const drivers = driversResponse?.data || []
+  const drivers = Array.isArray(driversResponse) ? driversResponse : driversResponse?.data || []
 
   const priceEstimate = useMemo(() => {
     if (!selectedVehicle || !distance) return 0
@@ -134,6 +134,8 @@ export default function TransportBookingCheckout() {
                   <div className="text-center py-8">
                     <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto" />
                   </div>
+                ) : driversError ? (
+                  <p className="text-red-500 text-center py-8">Error loading drivers: {driversError.message}</p>
                 ) : drivers.length === 0 ? (
                   <p className="text-slate-500 text-center py-8">No drivers available</p>
                 ) : (

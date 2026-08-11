@@ -83,7 +83,7 @@ export default function VehiclesManagementPage() {
 
     try {
       if (editingVehicle) {
-        await updateVehicle(editingVehicle.id, formData)
+        await updateVehicle(editingVehicle.vehicle_id, formData)
         setSubmitSuccess('Vehicle updated successfully!')
       } else {
         if (!driver?.id) {
@@ -116,8 +116,8 @@ export default function VehiclesManagementPage() {
     setDeleting(true)
 
     try {
-      await deleteVehicle(deletingVehicle.id)
-      setVehicles(vehicles.filter(v => v.id !== deletingVehicle.id))
+      await deleteVehicle(deletingVehicle.vehicle_id)
+      setVehicles(vehicles.filter(v => v.vehicle_id !== deletingVehicle.vehicle_id))
       setShowDeleteModal(false)
       setDeletingVehicle(null)
     } catch (err) {
@@ -175,7 +175,7 @@ export default function VehiclesManagementPage() {
             <tbody>
               {vehicles.length > 0 ? (
                 vehicles.map((vehicle, index) => (
-                  <tr key={vehicle.id} className={`border-b border-slate-50 ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'} hover:bg-blue-50/30 transition-colors`}>
+                  <tr key={vehicle.vehicle_id} className={`border-b border-slate-50 ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'} hover:bg-blue-50/30 transition-colors`}>
                     <td className="px-6 py-4">
                       <p className="text-sm font-medium text-slate-800">{vehicle.brand} {vehicle.model}</p>
                     </td>

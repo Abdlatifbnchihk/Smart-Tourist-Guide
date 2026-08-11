@@ -172,7 +172,7 @@ export default function DriverDashboardPage() {
               <tbody>
                 {vehicles.length > 0 ? (
                   vehicles.slice(0, 5).map((vehicle, index) => (
-                    <tr key={vehicle.id} className={`border-b border-slate-50 ${index % 2 === 0 ? 'bg-slate-50/50' : ''}`}>
+                    <tr key={vehicle.vehicle_id} className={`border-b border-slate-50 ${index % 2 === 0 ? 'bg-slate-50/50' : ''}`}>
                       <td className="px-6 py-4 text-sm font-medium text-slate-800">{vehicle.brand} {vehicle.model}</td>
                       <td className="px-6 py-4 text-sm text-slate-600 capitalize">{vehicle.type}</td>
                       <td className="px-6 py-4 text-sm text-slate-600">{vehicle.seats}</td>
