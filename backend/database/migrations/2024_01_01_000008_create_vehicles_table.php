@@ -3,20 +3,15 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::dropIfExists('vehicles');
-
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id('vehicle_id');
             $table->unsignedBigInteger('driver_id');
-            $table->foreign('driver_id')->references('id')->on('drivers')->cascadeOnDelete()->index();
             $table->string('brand', 100);
             $table->string('model', 100);
             $table->string('type', 50);
@@ -25,11 +20,10 @@ return new class extends Migration
             $table->boolean('air_conditioning')->default(false);
             $table->timestamps();
         });
+
+        DB::statement('ALTER TABLE vehicles ADD CONSTRAINT fk_vehicles_driver_id FOREIGN KEY (driver_id) REFERENCES drivers (id) ON DELETE CASCADE');
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('vehicles');

@@ -3,30 +3,25 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::dropIfExists('attractions');
-
         Schema::create('attractions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('city_id')->constrained('cities')->restrictOnDelete();
+            $table->unsignedBigInteger('city_id');
             $table->string('name', 150);
             $table->text('description')->nullable();
             $table->string('address', 255)->nullable();
             $table->string('opening_hours', 100)->nullable();
             $table->timestamps();
         });
+
+        DB::statement('ALTER TABLE attractions ADD CONSTRAINT fk_attractions_city_id FOREIGN KEY (city_id) REFERENCES cities (id) ON DELETE RESTRICT');
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('attractions');

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -10,9 +11,9 @@ return new class extends Migration
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('room_id')->nullable()->constrained('rooms', 'room_id')->nullOnDelete();
-            $table->foreignId('driver_id')->nullable()->constrained('drivers')->nullOnDelete();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('room_id')->nullable();
+            $table->unsignedBigInteger('driver_id')->nullable();
             $table->string('booking_number', 50)->unique();
             $table->string('booking_type', 50);
             $table->date('booking_date');
@@ -22,6 +23,10 @@ return new class extends Migration
             $table->string('status', 20)->default('Pending');
             $table->timestamps();
         });
+
+        DB::statement('ALTER TABLE bookings ADD CONSTRAINT fk_bookings_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE');
+        DB::statement('ALTER TABLE bookings ADD CONSTRAINT fk_bookings_room_id FOREIGN KEY (room_id) REFERENCES rooms (room_id) ON DELETE SET NULL');
+        DB::statement('ALTER TABLE bookings ADD CONSTRAINT fk_bookings_driver_id FOREIGN KEY (driver_id) REFERENCES drivers (id) ON DELETE SET NULL');
     }
 
     public function down(): void
