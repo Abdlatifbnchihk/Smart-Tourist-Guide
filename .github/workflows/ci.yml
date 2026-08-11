@@ -50,6 +50,7 @@ jobs:
         working-directory: backend
         run: |
           cp .env.example .env || true
+          sed -i 's/DB_PASSWORD=/DB_PASSWORD=root/' .env
           php artisan key:generate
         env:
           APP_ENV: testing
