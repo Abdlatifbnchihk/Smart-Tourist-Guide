@@ -21,7 +21,7 @@
         "pestphp/pest": "*",
         "pestphp/pest-plugin-laravel": "*",
         "phpunit/phpunit": "^12.5.12",
-        "laravel-larastan/larastan": "^3.4"
+        "larastan/larastan": "^3.4"
     },
     "autoload": {
         "psr-4": {
