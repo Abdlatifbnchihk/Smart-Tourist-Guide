@@ -15,7 +15,8 @@ return new class extends Migration
 
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id('vehicle_id');
-            $table->foreignId('driver_id')->constrained('drivers')->cascadeOnDelete()->index();
+            $table->unsignedBigInteger('driver_id');
+            $table->foreign('driver_id')->references('id')->on('drivers')->cascadeOnDelete()->index();
             $table->string('brand', 100);
             $table->string('model', 100);
             $table->string('type', 50);
