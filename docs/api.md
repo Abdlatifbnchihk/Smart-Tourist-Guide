@@ -1,1218 +1,2166 @@
-# 🗄️ Database Design — Smart Tourist Guide Morocco
+# Smart Tourist Guide — API Documentation
 
-> Complete relational schema documentation for the Smart Tourist Guide Morocco platform. This document is the source of truth for all database tables, relationships, business rules, and Laravel ORM mappings.
-
----
-
-## 📑 Table of Contents
-
-1. [Overview](#overview)
-2. [Entity Relationship Diagram](#entity-relationship-diagram)
-3. [Relationship Table](#relationship-table)
-4. [Table Documentation](#table-documentation)
-   - [users](#users)
-   - [cities](#cities)
-   - [drivers](#drivers)
-   - [vehicles](#vehicles)
-   - [hotels](#hotels)
-   - [rooms](#rooms)
-   - [restaurants](#restaurants)
-   - [attractions](#attractions)
-   - [bookings](#bookings)
-   - [reviews](#reviews)
-   - [favorites](#favorites)
-5. [Indexing Strategy](#indexing-strategy)
+> RESTful API for the Smart Tourist Guide Morocco platform. All endpoints are versioned under `/api/v1`.
 
 ---
 
-## Overview
+## Table of Contents
 
-The database is designed for a **multi-role tourism platform** covering three core domains:
-
-| Domain | Tables |
-|---|---|
-| **Identity & Access** | `users` |
-| **Catalog** | `cities`, `hotels`, `rooms`, `restaurants`, `attractions`, `drivers`, `vehicles` |
-| **Transactions** | `bookings` |
-| **Engagement** | `reviews`, `favorites` |
-
-Engine: **MySQL 8.0** (InnoDB), charset `utf8mb4`, collation `utf8mb4_unicode_ci`.
-All primary keys are unsigned `BIGINT` auto-increment (Laravel default `id()`).
-All tables use Laravel's standard `created_at` / `updated_at` timestamps, and `hotels`/`rooms`/`attractions` additionally support soft deletes (`deleted_at`).
+1. [Base URL & Authentication](#base-url--authentication)
+2. [Health Check](#health-check)
+3. [Auth](#auth)
+4. [Users (Admin)](#users-admin)
+5. [Roles (Admin)](#roles-admin)
+6. [Cities](#cities)
+7. [Restaurants](#restaurants)
+8. [Attractions](#attractions)
+9. [Hotels](#hotels)
+10. [Rooms](#rooms)
+11. [Drivers](#drivers)
+12. [Vehicles](#vehicles)
+13. [Hotel Bookings](#hotel-bookings)
+14. [Transport Bookings](#transport-bookings)
+15. [Reviews](#reviews)
+16. [Favorites](#favorites)
+17. [User Profile](#user-profile)
+18. [AI Itinerary](#ai-itinerary)
+19. [Error Codes](#error-codes)
 
 ---
 
-## Entity Relationship Diagram
+## Base URL & Authentication
 
-```mermaid
-erDiagram
-    USERS ||--o| DRIVERS : "has driver profile"
-    USERS ||--o{ BOOKINGS : "makes"
-    USERS ||--o{ REVIEWS : "writes"
-    USERS ||--o{ FAVORITES : "saves"
+**Base URL:** `http://localhost:8000/api/v1`
 
-    CITIES ||--o{ HOTELS : "contains"
-    CITIES ||--o{ RESTAURANTS : "contains"
-    CITIES ||--o{ ATTRACTIONS : "contains"
-    CITIES ||--o{ DRIVERS : "operates in"
+**Authentication:** Laravel Sanctum Bearer Token
 
-    HOTELS ||--o{ ROOMS : "has many"
-    DRIVERS ||--o{ VEHICLES : "owns"
+Include the token in the `Authorization` header for all protected endpoints:
 
-    BOOKINGS }o--|| USERS : "belongs to"
-    BOOKINGS }o--o| ROOMS : "optionally reserves"
-    BOOKINGS }o--o| DRIVERS : "optionally assigns"
-
-    REVIEWS }o--|| USERS : "written by"
-    REVIEWS }o--o| HOTELS : "about hotel"
-    REVIEWS }o--o| DRIVERS : "about driver"
-    REVIEWS }o--o| ATTRACTIONS : "about attraction"
-
-    FAVORITES }o--|| USERS : "saved by"
-    FAVORITES }o--o| HOTELS : "hotel"
-    FAVORITES }o--o| RESTAURANTS : "restaurant"
-    FAVORITES }o--o| ATTRACTIONS : "attraction"
-
-    USERS {
-        bigint user_id PK
-        varchar first_name
-        varchar last_name
-        varchar email UK
-        varchar phone UK
-        varchar password
-        enum role
-        enum status
-        boolean active
-    }
-    CITIES {
-        bigint city_id PK
-        varchar name UK
-        varchar region
-        text description
-    }
-    HOTELS {
-        bigint hotel_id PK
-        bigint city_id FK
-        varchar name
-        varchar address
-        varchar phone
-        varchar email
-        text description
-        tinyint stars
-    }
-    ROOMS {
-        bigint room_id PK
-        bigint hotel_id FK
-        varchar number
-        varchar type
-        int capacity
-        decimal price_per_night
-        boolean available
-    }
-    RESTAURANTS {
-        bigint restaurant_id PK
-        bigint city_id FK
-        varchar name
-        varchar address
-        varchar phone
-        varchar cuisine
-    }
-    ATTRACTIONS {
-        bigint attraction_id PK
-        bigint city_id FK
-        varchar name
-        text description
-        varchar address
-        varchar opening_hours
-    }
-    DRIVERS {
-        bigint driver_id PK
-        bigint user_id FK UK
-        bigint city_id FK
-        varchar license_number UK
-        int years_of_experience
-        boolean available
-        varchar languages
-    }
-    VEHICLES {
-        bigint vehicle_id PK
-        bigint driver_id FK
-        varchar brand
-        varchar model
-        varchar type
-        int seats
-        varchar registration_number UK
-        boolean air_conditioning
-    }
-    BOOKINGS {
-        bigint booking_id PK
-        bigint user_id FK
-        bigint room_id FK nullable
-        bigint driver_id FK nullable
-        varchar booking_number UK
-        enum booking_type
-        date booking_date
-        date start_date
-        date end_date
-        decimal total_price
-        enum status
-    }
-    REVIEWS {
-        bigint review_id PK
-        bigint user_id FK
-        bigint hotel_id FK nullable
-        bigint driver_id FK nullable
-        bigint attraction_id FK nullable
-        tinyint rating
-        text comment
-    }
-    FAVORITES {
-        bigint favorite_id PK
-        bigint user_id FK
-        bigint hotel_id FK nullable
-        bigint restaurant_id FK nullable
-        bigint attraction_id FK nullable
-    }
+```
+Authorization: Bearer <your_token_here>
 ```
 
----
+**Roles:**
 
-## Relationship Table
+| Role | Value |
+|------|-------|
+| Tourist | `tourist` |
+| Driver | `driver` |
+| Hotel Manager | `hotel_manager` |
+| Administrator | `administrator` |
 
-| Table | Relationship | Target | Foreign Key | On Delete |
-|---|---|---|---|---|
-| Table | Relationship | Target | Foreign Key | Nullable | On Delete |
-|---|---|---|---|---|---|
-| drivers | belongsTo | users | `user_id` | No | cascade |
-| drivers | belongsTo | cities | `city_id` | No | restrict |
-| vehicles | belongsTo | drivers | `driver_id` | No | cascade |
-| hotels | belongsTo | cities | `city_id` | No | restrict |
-| rooms | belongsTo | hotels | `hotel_id` | No | cascade |
-| restaurants | belongsTo | cities | `city_id` | No | restrict |
-| attractions | belongsTo | cities | `city_id` | No | restrict |
-| bookings | belongsTo | users | `user_id` | No | cascade |
-| bookings | belongsTo | rooms | `room_id` | Yes | set null |
-| bookings | belongsTo | drivers | `driver_id` | Yes | set null |
-| reviews | belongsTo | users | `user_id` | No | cascade |
-| reviews | belongsTo | hotels | `hotel_id` | Yes | cascade |
-| reviews | belongsTo | drivers | `driver_id` | Yes | cascade |
-| reviews | belongsTo | attractions | `attraction_id` | Yes | cascade |
-| favorites | belongsTo | users | `user_id` | No | cascade |
-| favorites | belongsTo | hotels | `hotel_id` | Yes | cascade |
-| favorites | belongsTo | restaurants | `restaurant_id` | Yes | cascade |
-| favorites | belongsTo | attractions | `attraction_id` | Yes | cascade |
+**User Statuses:** `Pending`, `Approved`, `Rejected`, `Suspended`
+
+**Booking Statuses:** `Pending`, `Confirmed`, `InProgress`, `Cancelled`, `Completed`
 
 ---
 
-## Table Documentation
+## Health Check
 
-## users
+### `GET /health`
 
-### Purpose
-Stores all authenticated users of the platform, regardless of role (Tourist, Driver, Hotel Manager, Administrator).
+Check API availability. **No authentication required.**
 
-### Description
-Central identity table. Every actor in the system is represented here. The `role` ENUM determines the user's permissions and dashboard. The `status` field supports admin moderation (approve, reject, suspend accounts). Authentication (Laravel Sanctum/Breeze) and profile data live in this table.
+**Response:** `200 OK`
 
-### Columns
-
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| user_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| first_name | VARCHAR(100) | No | — | User's first name |
-| last_name | VARCHAR(100) | No | — | User's last name |
-| email | VARCHAR(150) | No | — | Unique login email |
-| phone | VARCHAR(20) | No | — | Unique contact phone number |
-| password | VARCHAR(255) | No | — | Hashed password (bcrypt) |
-| role | ENUM | No | — | `'Tourist'`, `'Driver'`, `'Hotel Manager'`, `'Administrator'` |
-| status | ENUM | No | `'Pending'` | `'Pending'`, `'Approved'`, `'Rejected'`, `'Suspended'` |
-| active | BOOLEAN | No | true | Account active flag |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | Yes | NULL | Record update timestamp |
-
-### Data Types
-`user_id`: `bigIncrements` · `first_name`, `last_name`, `email`, `phone`, `password`: `string` · `role`, `status`: `enum` · `active`: `boolean` · timestamps: `timestamp`
-
-### Relationships
-- `users` **hasOne** `drivers` (when `role = 'Driver'`)
-- `users` **hasMany** `bookings`
-- `users` **hasMany** `reviews`
-- `users` **hasMany** `favorites`
-
-### Business Rules
-- A user must have exactly one role from the allowed ENUM values.
-- Only users with `status = 'Approved'` can log in and create bookings.
-- A user with `role = 'Driver'` must create a `drivers` profile before accepting transport bookings.
-- A user with `role = 'Hotel Manager'` must have at least one `hotels` record to manage rooms.
-- `email` and `phone` must each be unique across the platform.
-- Deactivated users (`active = false`) cannot log in or create new bookings.
-
-### Laravel Relationships
-```php
-class User extends Authenticatable
+```json
 {
-    public function driver(): HasOne
-    {
-        return $this->hasOne(Driver::class);
-    }
-
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class);
-    }
-
-    public function reviews(): HasMany
-    {
-        return $this->hasMany(Review::class);
-    }
-
-    public function favorites(): HasMany
-    {
-        return $this->hasMany(Favorite::class);
-    }
+  "status": "ok",
+  "timestamp": "2026-08-12T00:00:00.000000Z"
 }
 ```
 
-### Validation Rules
-```php
-'first_name' => 'required|string|max:100',
-'last_name'  => 'required|string|max:100',
-'email'      => 'required|email|max:150|unique:users,email',
-'phone'      => 'required|string|max:20|unique:users,phone',
-'password'   => 'required|string|min:8|confirmed',
-'role'       => 'required|in:Tourist,Driver,Hotel Manager,Administrator',
-```
+---
 
-### Indexes
-- PRIMARY KEY (`user_id`)
-- UNIQUE INDEX `users_email_unique` (`email`)
-- UNIQUE INDEX `users_phone_unique` (`phone`)
+## Auth
 
-### Example Record
+### `POST /auth/register`
+
+Register a new user. **No authentication required.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `first_name` | string | Yes | max:100 |
+| `last_name` | string | Yes | max:100 |
+| `email` | string | Yes | email, max:150, unique |
+| `phone` | string | Yes | max:20, unique |
+| `password` | string | Yes | min:8, confirmed |
+| `role` | string | Yes | `tourist`, `driver`, `hotel_manager`, `administrator` |
+| `city_id` | integer | Conditional | required if role is `driver`, must exist in `cities` |
+| `license_number` | string | Conditional | required if role is `driver`, unique in `drivers` |
+
+**Request Example:**
+
 ```json
 {
-  "user_id": 15,
-  "first_name": "Yasmine",
-  "last_name": "El Amrani",
-  "email": "yasmine.elamrani@example.com",
-  "phone": "+212612345678",
-  "role": "Tourist",
+  "first_name": "Mohamed",
+  "last_name": "Ali",
+  "email": "mohamed@gmail.com",
+  "phone": "0612345678",
+  "password": "Password123!",
+  "password_confirmation": "Password123!",
+  "role": "tourist"
+}
+```
+
+**Response:** `201 Created`
+
+```json
+{
+  "user": {
+    "id": 1,
+    "first_name": "Mohamed",
+    "last_name": "Ali",
+    "email": "mohamed@gmail.com",
+    "phone": "0612345678",
+    "role": "tourist",
+    "status": "Pending",
+    "active": true,
+    "created_at": "2026-08-12T00:00:00.000000Z",
+    "updated_at": "2026-08-12T00:00:00.000000Z"
+  },
+  "token": "1|abc123..."
+}
+```
+
+**Errors:**
+
+| Status | Description |
+|--------|-------------|
+| 422 | Validation failed (missing fields, duplicate email/phone) |
+
+---
+
+### `POST /auth/login`
+
+Authenticate a user and receive a token. **No authentication required.**
+
+**Request Body:**
+
+| Field | Type | Required |
+|-------|------|----------|
+| `email` | string | Yes |
+| `password` | string | Yes |
+
+**Request Example:**
+
+```json
+{
+  "email": "mohamed@gmail.com",
+  "password": "Password123!"
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "user": {
+    "id": 1,
+    "first_name": "Mohamed",
+    "last_name": "Ali",
+    "email": "mohamed@gmail.com",
+    "phone": "0612345678",
+    "role": "tourist",
+    "status": "Approved",
+    "active": true
+  },
+  "token": "1|abc123..."
+}
+```
+
+**Errors:**
+
+| Status | Description |
+|--------|-------------|
+| 422 | `The provided credentials are incorrect.` |
+
+---
+
+### `POST /auth/logout`
+
+Revoke the current access token. **Requires auth.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+---
+
+### `GET /auth/me`
+
+Get the authenticated user's profile. **Requires auth.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "id": 1,
+  "first_name": "Mohamed",
+  "last_name": "Ali",
+  "email": "mohamed@gmail.com",
+  "phone": "0612345678",
+  "role": "tourist",
   "status": "Approved",
-  "active": true,
-  "created_at": "2026-01-15T08:30:00Z",
-  "updated_at": "2026-02-01T12:00:00Z"
+  "active": true
 }
 ```
 
 ---
 
-## cities
+### `POST /tokens`
 
-### Purpose
-Stores Moroccan cities/regions available for tourism discovery.
+Issue a new API token with specific abilities. **Requires auth.**
 
-### Description
-Acts as the primary geographic anchor for the catalog. Hotels, restaurants, attractions, and drivers are all scoped to a city, enabling location-based search and filtering across the platform.
+**Request Body:**
 
-### Columns
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Token name, max:255 |
+| `abilities` | array | No | Array of ability strings (default: `["*"]`) |
 
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| city_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| name | VARCHAR(100) | No | — | City name (unique) |
-| region | VARCHAR(100) | Yes | NULL | Administrative region |
-| description | TEXT | Yes | NULL | Overview text for the city landing page |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | Yes | NULL | Record update timestamp |
+**Response:** `201 Created`
 
-### Data Types
-`city_id`: `bigIncrements` · `name`, `region`: `string` · `description`: `text` · timestamps: `timestamp`
-
-### Relationships
-- `cities` **hasMany** `hotels`
-- `cities` **hasMany** `restaurants`
-- `cities` **hasMany** `attractions`
-- `cities` **hasMany** `drivers`
-
-### Business Rules
-- City name must be unique.
-- A city cannot be deleted if it has associated hotels, restaurants, attractions, or drivers (restrict on delete).
-
-### Laravel Relationships
-```php
-class City extends Model
-{
-    public function hotels(): HasMany
-    {
-        return $this->hasMany(Hotel::class);
-    }
-
-    public function restaurants(): HasMany
-    {
-        return $this->hasMany(Restaurant::class);
-    }
-
-    public function attractions(): HasMany
-    {
-        return $this->hasMany(Attraction::class);
-    }
-
-    public function drivers(): HasMany
-    {
-        return $this->hasMany(Driver::class);
-    }
-}
-```
-
-### Validation Rules
-```php
-'name'        => 'required|string|max:100|unique:cities,name',
-'region'      => 'nullable|string|max:100',
-'description' => 'nullable|string',
-```
-
-### Indexes
-- PRIMARY KEY (`city_id`)
-- UNIQUE INDEX `cities_name_unique` (`name`)
-
-### Example Record
 ```json
 {
-  "city_id": 1,
-  "name": "Marrakech",
-  "region": "Marrakech-Safi",
-  "description": "The Red City, famed for its medina, souks, and Jemaa el-Fnaa square.",
-  "created_at": "2026-01-05T10:00:00Z",
-  "updated_at": "2026-01-05T10:00:00Z"
+  "token": "2|abc123...",
+  "token_id": 2,
+  "name": "mobile-app",
+  "abilities": ["*"],
+  "created_at": "2026-08-12T00:00:00.000000Z"
 }
 ```
 
 ---
 
-## drivers
+### `GET /tokens`
 
-### Purpose
-Stores driver profiles for the transport/ride-booking module.
+List all API tokens for the authenticated user. **Requires auth.**
 
-### Description
-Extends a `user` (role = `Driver`) with transport-specific credentials. A driver is linked to exactly one user and operates in one city. A driver may own multiple `vehicles` and can be assigned to bookings.
+**Response:** `200 OK`
 
-### Columns
-
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| driver_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| user_id | BIGINT UNSIGNED (FK) | No | — | References `users.user_id` (unique, one-to-one) |
-| city_id | BIGINT UNSIGNED (FK) | No | — | Primary city of operation |
-| license_number | VARCHAR(100) | No | — | Driving license number (unique) |
-| years_of_experience | INT | Yes | NULL | Years of driving experience |
-| available | BOOLEAN | No | true | Current availability status |
-| languages | VARCHAR(255) | Yes | NULL | Comma-separated list of spoken languages |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | Yes | NULL | Record update timestamp |
-
-### Data Types
-`driver_id`, `user_id`, `city_id`: `bigInteger` · `license_number`, `languages`: `string` · `years_of_experience`: `integer` · `available`: `boolean` · timestamps: `timestamp`
-
-### Relationships
-- `drivers` **belongsTo** `users`
-- `drivers` **belongsTo** `cities`
-- `drivers` **hasMany** `vehicles`
-- `drivers` **hasMany** `bookings`
-
-### Business Rules
-- A driver profile requires a unique `license_number`.
-- Each driver must be linked to exactly one `user` with `role = 'Driver'`.
-- A driver cannot accept bookings until their user account has `status = 'Approved'`.
-- A driver is linked to exactly one city.
-
-### Laravel Relationships
-```php
-class Driver extends Model
+```json
 {
-    public function user(): BelongsTo
+  "tokens": [
     {
-        return $this->belongsTo(User::class);
+      "id": 1,
+      "name": "auth-token",
+      "abilities": ["*"],
+      "last_used_at": "2026-08-12T00:00:00.000000Z",
+      "expires_at": null,
+      "created_at": "2026-08-12T00:00:00.000000Z"
     }
-
-    public function city(): BelongsTo
-    {
-        return $this->belongsTo(City::class);
-    }
-
-    public function vehicles(): HasMany
-    {
-        return $this->hasMany(Vehicle::class);
-    }
-
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class);
-    }
+  ]
 }
 ```
 
-### Validation Rules
-```php
-'user_id'              => 'required|exists:users,id|unique:drivers,user_id',
-'city_id'              => 'required|exists:cities,id',
-'license_number'       => 'required|string|max:100|unique:drivers,license_number',
-'years_of_experience'  => 'nullable|integer|min:0',
-'languages'            => 'nullable|string|max:255',
-```
+---
 
-### Indexes
-- PRIMARY KEY (`driver_id`)
-- UNIQUE INDEX `drivers_user_id_unique` (`user_id`)
-- UNIQUE INDEX `drivers_license_number_unique` (`license_number`)
-- INDEX `drivers_city_id_index` (`city_id`)
+### `DELETE /tokens/{tokenId}`
 
-### Example Record
+Revoke a specific API token. **Requires auth.**
+
+**Response:** `200 OK`
+
 ```json
 {
-  "driver_id": 6,
-  "user_id": 31,
+  "message": "Token revoked successfully"
+}
+```
+
+**Errors:**
+
+| Status | Description |
+|--------|-------------|
+| 404 | Token not found |
+
+---
+
+### `DELETE /tokens`
+
+Revoke all API tokens. **Requires auth.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "All tokens revoked successfully"
+}
+```
+
+---
+
+## Users (Admin)
+
+Admin routes are prefixed with `/admin` and require `administrator` role.
+
+### `GET /admin/stats`
+
+Get dashboard statistics. **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "data": {
+    "total_users": 10,
+    "total_cities": 9,
+    "total_hotels": 15,
+    "total_bookings": 42,
+    "average_rating": 4.2,
+    "recent_users": [
+      {
+        "id": 1,
+        "first_name": "Mohamed",
+        "last_name": "Ali",
+        "email": "mohamed@gmail.com",
+        "role": "tourist"
+      }
+    ],
+    "recent_bookings": [
+      {
+        "id": 1,
+        "booking_number": "HB-20260812-001",
+        "tourist_name": "Mohamed Ali",
+        "hotel_name": "Riad Marrakech",
+        "start_date": "2026-09-01",
+        "end_date": "2026-09-05",
+        "status": "Confirmed",
+        "total_price": 480.00
+      }
+    ]
+  }
+}
+```
+
+---
+
+### `GET /admin/users`
+
+List all users with pagination and filters. **Requires auth + admin role.**
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `role` | string | Filter by role |
+| `status` | string | Filter by status |
+| `active` | boolean | Filter by active status |
+| `search` | string | Search by first_name, last_name, or email |
+| `page` | integer | Page number (default: 1) |
+
+**Response:** `200 OK`
+
+```json
+[
+  {
+    "user_id": 1,
+    "first_name": "Mohamed",
+    "last_name": "Ali",
+    "email": "mohamed@gmail.com",
+    "phone": "0612345678",
+    "role": "tourist",
+    "status": "Approved",
+    "active": true,
+    "created_at": "2026-08-12T00:00:00.000000Z"
+  }
+]
+```
+
+---
+
+### `POST /admin/users`
+
+Create a new user. **Requires auth + admin role.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `first_name` | string | Yes | max:100 |
+| `last_name` | string | Yes | max:100 |
+| `email` | string | Yes | email, max:150, unique |
+| `phone` | string | Yes | max:20, unique |
+| `password` | string | Yes | min:8, confirmed |
+| `role` | string | Yes | `Tourist`, `Driver`, `Hotel Manager`, `Administrator` (or lowercase) |
+| `status` | string | No | `Pending`, `Approved`, `Rejected`, `Suspended` |
+| `city_id` | integer | Conditional | required if role is `Driver` |
+| `license_number` | string | Conditional | required if role is `Driver` |
+
+**Response:** `201 Created`
+
+```json
+{
+  "message": "User created successfully",
+  "user": {
+    "user_id": 2,
+    "first_name": "Sara",
+    "last_name": "Ben",
+    "email": "sara@gmail.com",
+    "role": "driver",
+    "status": "Pending",
+    "active": true
+  }
+}
+```
+
+---
+
+### `GET /admin/users/{user}`
+
+Get a single user. **Requires auth + admin role.**
+
+**Response:** `200 OK` — User object with `driver` and `bookings` relations.
+
+---
+
+### `PUT /admin/users/{user}`
+
+Update a user. **Requires auth + admin role.**
+
+**Request Body:** Same as `POST /admin/users` but all fields are optional (`sometimes` validation).
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "User updated successfully",
+  "user": { ... }
+}
+```
+
+---
+
+### `DELETE /admin/users/{user}`
+
+Delete a user. **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "User deleted successfully"
+}
+```
+
+---
+
+## Roles (Admin)
+
+### `GET /admin/roles`
+
+List all roles with user counts. **Requires auth + admin role.**
+
+**Response:** `200 OK` — Paginated list of roles.
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Admin",
+    "slug": "admin",
+    "description": "Platform administrator with full access.",
+    "users_count": 1,
+    "created_at": "2026-08-12T00:00:00.000000Z",
+    "updated_at": "2026-08-12T00:00:00.000000Z"
+  }
+]
+```
+
+---
+
+### `POST /admin/roles`
+
+Create a new role. **Requires auth + admin role.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `name` | string | Yes | max:50, unique |
+| `slug` | string | Yes | max:50, unique |
+| `description` | string | No | max:255 |
+
+**Response:** `201 Created`
+
+```json
+{
+  "message": "Role created successfully",
+  "role": { ... }
+}
+```
+
+---
+
+### `GET /admin/roles/{role}`
+
+Get a single role with its users. **Requires auth + admin role.**
+
+---
+
+### `PUT /admin/roles/{role}`
+
+Update a role. **Requires auth + admin role.**
+
+**Request Body:** Same as `POST /admin/roles` but all fields are optional.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Role updated successfully",
+  "role": { ... }
+}
+```
+
+---
+
+### `DELETE /admin/roles/{role}`
+
+Delete a role. **Requires auth + admin role.**
+
+**Errors:**
+
+| Status | Description |
+|--------|-------------|
+| 409 | Cannot delete role with assigned users |
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Role deleted successfully"
+}
+```
+
+---
+
+## Cities
+
+### `GET /cities`
+
+List all cities. **Requires auth.**
+
+**Response:** `200 OK`
+
+```json
+[
+  {
+    "city_id": 1,
+    "name": "Marrakech",
+    "region": "Marrakech-Safi",
+    "description": "The Red City, famed for its medina, souks, and Jemaa el-Fnaa square.",
+    "hotels_count": 5,
+    "attractions_count": 8,
+    "restaurants_count": 3
+  }
+]
+```
+
+---
+
+### `GET /cities/{city}`
+
+Get a single city with its hotels, attractions, and restaurants. **Requires auth.**
+
+**Response:** `200 OK` — City object with `hotels`, `attractions`, `restaurants` relations loaded.
+
+---
+
+### `POST /cities`
+
+Create a new city. **Requires auth + admin role.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `name` | string | Yes | max:100, unique |
+| `description` | string | No | — |
+| `region` | string | No | max:100 |
+
+**Response:** `201 Created`
+
+```json
+{
+  "message": "City created successfully",
+  "city": {
+    "city_id": 10,
+    "name": "Meknes",
+    "region": "Fes-Meknes",
+    "description": "An imperial city with historic monuments."
+  }
+}
+```
+
+---
+
+### `PUT /cities/{city}`
+
+Update a city. **Requires auth + admin role.**
+
+**Request Body:** Same as `POST /cities` but all fields required.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "City updated successfully",
+  "city": { ... }
+}
+```
+
+---
+
+### `DELETE /cities/{city}`
+
+Delete a city. **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "City deleted successfully"
+}
+```
+
+---
+
+## Restaurants
+
+### `GET /restaurants`
+
+List all restaurants. **Requires auth.**
+
+**Response:** `200 OK`
+
+```json
+[
+  {
+    "restaurant_id": 1,
+    "city_id": 1,
+    "name": "Nomad",
+    "description": "Modern Moroccan cuisine.",
+    "address": "Derb Aarjane, Marrakech",
+    "cuisine": "Moroccan",
+    "phone": "+212524381234",
+    "price_range": 3,
+    "average_rating": 4.5,
+    "reviews_count": 12,
+    "is_favorite": false,
+    "city": { ... },
+    "reviews": [ ... ]
+  }
+]
+```
+
+---
+
+### `POST /restaurants`
+
+Create a restaurant. **Requires auth + admin role.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `city_id` | integer | Yes | must exist in `cities` |
+| `name` | string | Yes | max:150, unique |
+| `description` | string | No | — |
+| `address` | string | No | max:255 |
+| `cuisine` | string | Yes | max:100 |
+| `phone` | string | No | max:20 |
+| `price_range` | integer | No | between:1-4 |
+
+**Response:** `201 Created`
+
+```json
+{
+  "message": "Restaurant created successfully",
+  "restaurant": { ... }
+}
+```
+
+---
+
+### `GET /restaurants/{restaurant}`
+
+Get a single restaurant with reviews. **Requires auth.**
+
+---
+
+### `PUT /restaurants/{restaurant}`
+
+Update a restaurant. **Requires auth + admin role.**
+
+**Request Body:** Same as `POST /restaurants`.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Restaurant updated successfully",
+  "restaurant": { ... }
+}
+```
+
+---
+
+### `DELETE /restaurants/{restaurant}`
+
+Delete a restaurant. **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Restaurant deleted successfully"
+}
+```
+
+---
+
+## Attractions
+
+### `GET /attractions`
+
+List attractions with filters. **Requires auth.**
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `city_id` | integer | Filter by city |
+| `category` | string | Filter by category |
+| `min_price` | number | Minimum price |
+| `max_price` | number | Maximum price |
+| `min_rating` | number | Minimum average rating |
+| `search` | string | Search by name |
+| `per_page` | integer | Results per page (default: 15) |
+
+**Response:** `200 OK` — Paginated list of attractions.
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Jemaa el-Fnaa",
+    "slug": "jemaa-el-fnaa",
+    "description": "Famous square and market in Marrakech.",
+    "address": "Jemaa el-Fnaa, Marrakech",
+    "opening_hours": "24/7",
+    "city_id": 1,
+    "created_by": 1,
+    "average_rating": 4.7,
+    "reviews_count": 20,
+    "is_favorite": false,
+    "city": { ... },
+    "reviews": [ ... ]
+  }
+]
+```
+
+---
+
+### `POST /attractions`
+
+Create an attraction. **Requires auth + admin role.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `city_id` | integer | Yes | must exist in `cities` |
+| `name` | string | Yes | max:150, unique |
+| `description` | string | No | — |
+| `address` | string | No | max:255 |
+| `opening_hours` | string | No | max:100 |
+
+**Response:** `201 Created`
+
+```json
+{
+  "message": "Attraction created successfully",
+  "attraction": { ... }
+}
+```
+
+---
+
+### `GET /attractions/{attraction}`
+
+Get a single attraction with reviews. **Requires auth.**
+
+---
+
+### `PUT /attractions/{attraction}`
+
+Update an attraction. **Requires auth.** Must be the creator or admin.
+
+**Request Body:** Same as `POST /attractions`.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Attraction updated successfully",
+  "attraction": { ... }
+}
+```
+
+**Errors:**
+
+| Status | Description |
+|--------|-------------|
+| 403 | You are not authorized to update this attraction |
+
+---
+
+### `DELETE /attractions/{attraction}`
+
+Delete an attraction. **Requires auth.** Must be the creator or admin.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Attraction deleted successfully"
+}
+```
+
+**Errors:**
+
+| Status | Description |
+|--------|-------------|
+| 403 | You are not authorized to delete this attraction |
+
+---
+
+## Hotels
+
+### `GET /hotels`
+
+List hotels with filters. **Requires auth.**
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `city_id` | integer | Filter by city |
+| `star_rating` | integer | Filter by stars (1-5) |
+| `min_price` | number | Minimum room price |
+| `max_price` | number | Maximum room price |
+| `search` | string | Search by hotel name |
+| `per_page` | integer | Results per page (default: 15) |
+
+**Response:** `200 OK` — Paginated list of hotels.
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Riad Marrakech",
+    "address": "Derb Sidi Ahmed, Marrakech",
+    "phone": "+212524381234",
+    "email": "info@riadmarrakech.com",
+    "description": "Traditional riad in the heart of the medina.",
+    "stars": 4,
+    "city_id": 1,
+    "created_by": 1,
+    "average_rating": 4.3,
+    "reviews_count": 15,
+    "rooms_count": 8,
+    "is_favorite": false,
+    "city": { ... },
+    "rooms": [ ... ],
+    "reviews": [ ... ]
+  }
+]
+```
+
+---
+
+### `POST /hotels`
+
+Create a hotel. **Requires auth + admin or hotel_manager role.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `city_id` | integer | Yes | must exist in `cities` |
+| `name` | string | Yes | max:150 |
+| `address` | string | Yes | max:255 |
+| `phone` | string | No | max:20 |
+| `email` | string | No | email, max:150 |
+| `description` | string | No | — |
+| `stars` | integer | No | min:1, max:5 |
+
+**Response:** `201 Created`
+
+```json
+{
+  "message": "Hotel created successfully",
+  "hotel": { ... }
+}
+```
+
+---
+
+### `GET /hotels/{hotel}`
+
+Get a single hotel with rooms and reviews. **Requires auth.**
+
+---
+
+### `PUT /hotels/{hotel}`
+
+Update a hotel. **Requires auth.** Must be the creator, admin, or hotel_manager.
+
+**Request Body:** Same as `POST /hotels` but all fields optional.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Hotel updated successfully",
+  "hotel": { ... }
+}
+```
+
+**Errors:**
+
+| Status | Description |
+|--------|-------------|
+| 403 | You are not authorized to update this hotel |
+
+---
+
+### `DELETE /hotels/{hotel}`
+
+Delete a hotel (soft delete). **Requires auth.** Must be the creator, admin, or hotel_manager.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Hotel deleted successfully"
+}
+```
+
+---
+
+## Rooms
+
+### `GET /hotels/{hotelId}/rooms`
+
+List rooms for a hotel. **Requires auth.**
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | string | Filter by room type |
+| `available` | boolean | Filter by availability |
+| `min_price` | number | Minimum price per night |
+| `max_price` | number | Maximum price per night |
+| `per_page` | integer | Results per page (default: 15) |
+
+**Response:** `200 OK` — Paginated list of rooms.
+
+```json
+[
+  {
+    "room_id": 1,
+    "hotel_id": 1,
+    "number": "101",
+    "type": "Deluxe",
+    "capacity": 2,
+    "price_per_night": 120.00,
+    "available": true,
+    "hotel": { ... }
+  }
+]
+```
+
+---
+
+### `POST /hotels/{hotelId}/rooms`
+
+Create a room. **Requires auth + admin or hotel_manager role.** Must own the hotel.
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `number` | string | Yes | max:20, unique per hotel |
+| `type` | string | Yes | max:50 |
+| `capacity` | integer | Yes | min:1 |
+| `price_per_night` | number | Yes | gt:0 |
+| `available` | boolean | No | default: true |
+
+**Response:** `201 Created`
+
+```json
+{
+  "message": "Room created successfully",
+  "room": { ... }
+}
+```
+
+**Errors:**
+
+| Status | Description |
+|--------|-------------|
+| 403 | You are not authorized to add rooms to this hotel |
+
+---
+
+### `GET /rooms/{id}`
+
+Get a single room. **Requires auth.**
+
+---
+
+### `PUT /rooms/{id}`
+
+Update a room. **Requires auth.** Must be the hotel owner, admin, or hotel_manager.
+
+**Request Body:** Same as `POST /rooms` but all fields optional.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Room updated successfully",
+  "room": { ... }
+}
+```
+
+---
+
+### `DELETE /rooms/{id}`
+
+Soft delete a room. **Requires auth.** Must be the hotel owner, admin, or hotel_manager.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Room deleted successfully"
+}
+```
+
+---
+
+### `PUT /rooms/{id}/restore`
+
+Restore a soft-deleted room. **Requires auth.** Must be the hotel owner, admin, or hotel_manager.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Room restored successfully",
+  "room": { ... }
+}
+```
+
+---
+
+### `DELETE /rooms/{id}/force`
+
+Permanently delete a room. **Requires auth.** Must be the hotel owner, admin, or hotel_manager.
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Room permanently deleted"
+}
+```
+
+---
+
+## Drivers
+
+### `POST /drivers/profile`
+
+Get or create a driver profile. **Requires auth + driver role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "id": 1,
+  "user_id": 5,
   "city_id": 1,
-  "license_number": "MA-2024-88213",
-  "years_of_experience": 10,
+  "license_number": "DL-ABC123",
+  "years_of_experience": 5,
+  "languages": "Arabic, French, English",
   "available": true,
-  "languages": "Arabic,French,English",
-  "created_at": "2026-01-18T10:00:00Z",
-  "updated_at": "2026-02-05T10:00:00Z"
+  "is_verified": false,
+  "user": { ... },
+  "city": { ... }
 }
 ```
 
 ---
 
-## vehicles
+### `GET /drivers`
 
-### Purpose
-Stores vehicles owned/operated by drivers for transport bookings.
+List all drivers. **Requires auth.**
 
-### Description
-Represents a physical vehicle that can be assigned to a `booking`. Each vehicle belongs to exactly one driver and carries capacity and feature attributes used for fare estimation and ride matching.
+**Response:** `200 OK` — Array of driver objects with `user`, `city`, `vehicles`, `reviews` relations.
 
-### Columns
+---
 
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| vehicle_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| driver_id | BIGINT UNSIGNED (FK) | No | — | References `drivers.driver_id` |
-| brand | VARCHAR(100) | No | — | Vehicle brand (e.g. `Dacia`) |
-| model | VARCHAR(100) | No | — | Vehicle model (e.g. `Duster`) |
-| type | VARCHAR(50) | No | — | `sedan`, `suv`, `van`, `minibus` |
-| seats | INT | No | — | Passenger seating capacity |
-| registration_number | VARCHAR(50) | No | — | License plate / registration number (unique) |
-| air_conditioning | BOOLEAN | No | false | Whether the vehicle has A/C |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | Yes | NULL | Record update timestamp |
+### `POST /drivers`
 
-### Data Types
-`vehicle_id`, `driver_id`: `bigIncrements` · `brand`, `model`, `type`, `registration_number`: `string` · `seats`: `integer` · `air_conditioning`: `boolean` · timestamps: `timestamp`
+Create a driver profile. **Requires auth.**
 
-### Relationships
-- `vehicles` **belongsTo** `drivers`
-- `vehicles` **hasMany** `bookings`
+**Request Body:**
 
-### Business Rules
-- `registration_number` must be unique across the platform.
-- A vehicle must belong to a verified driver (user `status = 'Approved'`) to be bookable.
-- `seats` must be greater than 0.
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `city_id` | integer | Yes | must exist in `cities` |
+| `license_number` | string | Yes | max:20, unique |
+| `years_of_experience` | integer | No | min:0 |
+| `languages` | string | No | max:255 |
+| `available` | boolean | No | default: true |
 
-### Laravel Relationships
-```php
-class Vehicle extends Model
+**Response:** `201 Created`
+
+```json
 {
-    public function driver(): BelongsTo
-    {
-        return $this->belongsTo(Driver::class);
-    }
-
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class);
-    }
+  "id": 1,
+  "user_id": 5,
+  "city_id": 1,
+  "license_number": "DL-ABC123",
+  "years_of_experience": 5,
+  "languages": "Arabic, French",
+  "available": true,
+  "is_verified": false
 }
 ```
 
-### Validation Rules
-```php
-'driver_id'            => 'required|exists:drivers,id',
-'brand'                => 'required|string|max:100',
-'model'                => 'required|string|max:100',
-'type'                 => 'required|string|max:50',
-'seats'                => 'required|integer|min:1',
-'registration_number'  => 'required|string|max:50|unique:vehicles,registration_number',
-'air_conditioning'     => 'required|boolean',
+---
+
+### `GET /drivers/{id}`
+
+Get a single driver. **Requires auth.**
+
+---
+
+### `PUT /drivers/{id}`
+
+Update a driver. **Requires auth.**
+
+**Request Body:** Same as `POST /drivers` but all fields optional.
+
+**Response:** `200 OK`
+
+---
+
+### `PATCH /drivers/{id}/verify`
+
+Verify a driver. **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+---
+
+## Vehicles
+
+### `GET /drivers/{driverId}/vehicles`
+
+List vehicles for a driver. **Requires auth.**
+
+**Response:** `200 OK`
+
+```json
+[
+  {
+    "vehicle_id": 1,
+    "driver_id": 1,
+    "brand": "Toyota",
+    "model": "Corolla",
+    "type": "sedan",
+    "seats": 4,
+    "registration_number": "ABC-1234",
+    "air_conditioning": true,
+    "price_per_km": 2.50,
+    "driver": { ... }
+  }
+]
 ```
 
-### Indexes
-- PRIMARY KEY (`vehicle_id`)
-- UNIQUE INDEX `vehicles_registration_number_unique` (`registration_number`)
-- INDEX `vehicles_driver_id_index` (`driver_id`)
-- INDEX `vehicles_type_index` (`type`)
+---
 
-### Example Record
+### `POST /drivers/{driverId}/vehicles`
+
+Create a vehicle. **Requires auth + driver role.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `brand` | string | Yes | max:100 |
+| `model` | string | Yes | max:100 |
+| `type` | string | Yes | `sedan`, `suv`, `van`, `minibus` |
+| `seats` | integer | Yes | min:1 |
+| `registration_number` | string | Yes | max:50, unique |
+| `air_conditioning` | boolean | No | default: true |
+| `price_per_km` | number | Yes | gt:0 |
+
+**Response:** `201 Created`
+
 ```json
 {
-  "vehicle_id": 9,
-  "driver_id": 6,
-  "brand": "Dacia",
-  "model": "Duster",
-  "type": "suv",
+  "vehicle_id": 1,
+  "driver_id": 1,
+  "brand": "Toyota",
+  "model": "Corolla",
+  "type": "sedan",
   "seats": 4,
-  "registration_number": "12345-A-6",
+  "registration_number": "ABC-1234",
   "air_conditioning": true,
-  "created_at": "2026-01-18T10:10:00Z",
-  "updated_at": "2026-01-18T10:10:00Z"
+  "price_per_km": 2.50
 }
 ```
 
 ---
 
-## hotels
+### `GET /vehicles/{id}`
 
-### Purpose
-Stores hotel listings available on the platform.
+Get a single vehicle. **Requires auth.**
 
-### Description
-Represents a lodging establishment within a city. Each hotel exposes a set of bookable `rooms` and can receive reviews and favorites from users.
+---
 
-### Columns
+### `PUT /vehicles/{id}`
 
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| hotel_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| city_id | BIGINT UNSIGNED (FK) | No | — | References `cities.city_id` |
-| name | VARCHAR(150) | No | — | Hotel name |
-| address | VARCHAR(255) | No | — | Street address |
-| phone | VARCHAR(20) | Yes | NULL | Contact phone |
-| email | VARCHAR(150) | Yes | NULL | Contact email |
-| description | TEXT | Yes | NULL | Full description / amenities summary |
-| stars | TINYINT UNSIGNED | Yes | NULL | Official star classification (1-5) |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | Yes | NULL | Record update timestamp |
+Update a vehicle. **Requires auth.**
 
-### Data Types
-`hotel_id`, `city_id`: `bigIncrements` · `name`, `address`, `phone`, `email`: `string` · `description`: `text` · `stars`: `tinyInteger` · timestamps: `timestamp`
+**Request Body:** Same as `POST /vehicles` but all fields optional.
 
-### Relationships
-- `hotels` **belongsTo** `cities`
-- `hotels` **hasMany** `rooms`
-- `hotels` **hasMany** `reviews`
-- `hotels` **hasMany** `favorites`
-- `hotels` **hasMany** `bookings` (through rooms)
+**Response:** `200 OK`
 
-### Business Rules
-- A hotel must belong to a valid city.
-- A hotel must have at least one room to appear in search results.
-- `stars` must be between 1 and 5 if provided.
+---
 
-### Laravel Relationships
-```php
-class Hotel extends Model
+### `DELETE /vehicles/{id}`
+
+Delete a vehicle. **Requires auth.**
+
+**Response:** `200 OK`
+
+---
+
+## Hotel Bookings
+
+### `GET /hotel-bookings`
+
+List hotel bookings. **Requires auth.** Tourists see their own, hotel managers see bookings for their hotels.
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter by status |
+| `per_page` | integer | Results per page (default: 15) |
+
+**Response:** `200 OK` — Paginated list of bookings.
+
+```json
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "room_id": 1,
+    "booking_number": "HB-20260812-001",
+    "booking_type": "Hotel",
+    "booking_date": "2026-08-12",
+    "start_date": "2026-09-01",
+    "end_date": "2026-09-05",
+    "total_price": 480.00,
+    "status": "Pending",
+    "user": { ... },
+    "room": { ... },
+    "hotel": { ... }
+  }
+]
+```
+
+---
+
+### `POST /hotel-bookings`
+
+Create a hotel booking. **Requires auth + tourist role.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `room_id` | integer | Yes | must exist in `rooms` |
+| `start_date` | date | Yes | after:today |
+| `end_date` | date | Yes | after:start_date |
+
+**Response:** `201 Created`
+
+```json
 {
-    public function city(): BelongsTo
-    {
-        return $this->belongsTo(City::class);
-    }
-
-    public function rooms(): HasMany
-    {
-        return $this->hasMany(Room::class);
-    }
-
-    public function reviews(): HasMany
-    {
-        return $this->hasMany(Review::class);
-    }
-
-    public function favorites(): HasMany
-    {
-        return $this->hasMany(Favorite::class);
-    }
+  "message": "Booking created successfully",
+  "booking": { ... }
 }
 ```
 
-### Validation Rules
-```php
-'city_id'     => 'required|exists:cities,id',
-'name'        => 'required|string|max:150',
-'address'     => 'required|string|max:255',
-'phone'       => 'nullable|string|max:20',
-'email'       => 'nullable|email|max:150',
-'description' => 'nullable|string',
-'stars'       => 'nullable|integer|between:1,5',
-```
+**Errors:**
 
-### Indexes
-- PRIMARY KEY (`hotel_id`)
-- INDEX `hotels_city_id_index` (`city_id`)
+| Status | Description |
+|--------|-------------|
+| 422 | Room not available for selected dates |
 
-### Example Record
+---
+
+### `GET /hotel-bookings/{booking}`
+
+Get a single booking. **Requires auth.** Tourists can only see their own; hotel managers can only see bookings for their hotels.
+
+---
+
+### `PATCH /hotel-bookings/{booking}/cancel`
+
+Cancel a booking. **Requires auth.** Tourists can cancel their own; hotel managers can cancel bookings for their hotels.
+
+**Response:** `200 OK`
+
 ```json
 {
-  "hotel_id": 4,
-  "city_id": 1,
-  "name": "Riad Atlas Dream",
-  "address": "12 Derb El Hammam, Medina, Marrakech",
-  "phone": "+212524123456",
-  "email": "contact@riadatlasdream.ma",
-  "description": "A boutique riad in the heart of the Marrakech medina.",
-  "stars": 4,
-  "created_at": "2026-01-12T09:00:00Z",
-  "updated_at": "2026-02-01T09:00:00Z"
+  "message": "Booking cancelled successfully",
+  "booking": { ... }
+}
+```
+
+**Errors:**
+
+| Status | Description |
+|--------|-------------|
+| 403 | Unauthorized |
+| 422 | Cannot cancel a booking in current status |
+
+---
+
+### `PATCH /hotel-bookings/{booking}/status`
+
+Update booking status. **Requires auth + hotel_manager role.**
+
+**Request Body:**
+
+| Field | Type | Required | Values |
+|-------|------|----------|--------|
+| `status` | string | Yes | `confirmed`, `completed` |
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Booking status updated successfully",
+  "booking": { ... }
 }
 ```
 
 ---
 
-## rooms
+### `DELETE /hotel-bookings/{booking}`
 
-### Purpose
-Stores individual room types/inventory offered by a hotel.
+Delete a booking (admin only). **Requires auth + admin role.**
 
-### Description
-Represents a bookable unit within a hotel (e.g. "Room 101 - Deluxe Double"). Rooms hold pricing and capacity information used by the booking engine to compute availability and price.
+**Response:** `200 OK`
 
-### Columns
-
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| room_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| hotel_id | BIGINT UNSIGNED (FK) | No | — | References `hotels.hotel_id` |
-| number | VARCHAR(20) | No | — | Room number identifier |
-| type | VARCHAR(50) | No | — | e.g. `Single`, `Double`, `Suite` |
-| capacity | INT | No | — | Max number of guests |
-| price_per_night | DECIMAL(10,2) | No | — | Nightly rate |
-| available | BOOLEAN | No | true | Availability toggle |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | Yes | NULL | Record update timestamp |
-
-### Data Types
-`room_id`, `hotel_id`: `bigIncrements` · `number`, `type`: `string` · `capacity`: `integer` · `price_per_night`: `decimal(10,2)` · `available`: `boolean` · timestamps: `timestamp`
-
-### Relationships
-- `rooms` **belongsTo** `hotels`
-- `rooms` **hasMany** `bookings`
-
-### Business Rules
-- `price_per_night` must be greater than 0.
-- A room cannot be booked if `available = false` or if overlapping confirmed bookings exist for the requested dates.
-- `capacity` must be respected by the `guests` value on bookings.
-
-### Laravel Relationships
-```php
-class Room extends Model
-{
-    public function hotel(): BelongsTo
-    {
-        return $this->belongsTo(Hotel::class);
-    }
-
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class);
-    }
-}
-```
-
-### Validation Rules
-```php
-'hotel_id'          => 'required|exists:hotels,id',
-'number'            => 'required|string|max:20',
-'type'              => 'required|string|max:50',
-'capacity'          => 'required|integer|min:1',
-'price_per_night'   => 'required|numeric|min:0.01',
-```
-
-### Indexes
-- PRIMARY KEY (`room_id`)
-- INDEX `rooms_hotel_id_index` (`hotel_id`)
-- INDEX `rooms_price_per_night_index` (`price_per_night`)
-
-### Example Record
 ```json
 {
-  "room_id": 11,
-  "hotel_id": 4,
-  "number": "101",
-  "type": "Deluxe Double Room",
-  "capacity": 2,
-  "price_per_night": 85.00,
-  "available": true,
-  "created_at": "2026-01-12T09:15:00Z",
-  "updated_at": "2026-01-12T09:15:00Z"
+  "message": "Booking deleted successfully"
 }
 ```
 
 ---
 
-## restaurants
+## Transport Bookings
 
-### Purpose
-Stores restaurant listings available for discovery within a city.
+### `GET /transport-bookings`
 
-### Description
-Represents a dining establishment within a city. Restaurants are discoverable by tourists and can be saved as favorites. Each restaurant belongs to a city and includes cuisine information for filtering.
+List transport bookings. **Requires auth.** Tourists see their own; drivers see bookings assigned to them.
 
-### Columns
+**Query Parameters:**
 
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| restaurant_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| city_id | BIGINT UNSIGNED (FK) | No | — | References `cities.city_id` |
-| name | VARCHAR(150) | No | — | Restaurant name |
-| address | VARCHAR(255) | No | — | Street address |
-| phone | VARCHAR(20) | Yes | NULL | Contact phone |
-| cuisine | VARCHAR(100) | No | — | Cuisine type (e.g. `Moroccan`, `Italian`, `Fusion`) |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | Yes | NULL | Record update timestamp |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter by status |
+| `per_page` | integer | Results per page (default: 15) |
 
-### Data Types
-`restaurant_id`, `city_id`: `bigIncrements` · `name`, `address`, `phone`, `cuisine`: `string` · timestamps: `timestamp`
+**Response:** `200 OK` — Paginated list of transport bookings.
 
-### Relationships
-- `restaurants` **belongsTo** `cities`
-- `restaurants` **hasMany** `favorites`
-
-### Business Rules
-- A restaurant must belong to a valid city.
-- A restaurant cannot be deleted if it has associated favorites (restrict on delete).
-
-### Laravel Relationships
-```php
-class Restaurant extends Model
-{
-    public function city(): BelongsTo
-    {
-        return $this->belongsTo(City::class);
-    }
-
-    public function favorites(): HasMany
-    {
-        return $this->hasMany(Favorite::class);
-    }
-}
+```json
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "driver_id": 1,
+    "room_id": null,
+    "booking_number": "TB-20260812-001",
+    "booking_type": "Airport Transfer",
+    "booking_date": "2026-08-12",
+    "start_date": "2026-09-01",
+    "end_date": "2026-09-01",
+    "total_price": 150.00,
+    "distance_km": 30.5,
+    "status": "Pending",
+    "user": { ... },
+    "driver": { ... }
+  }
+]
 ```
 
-### Validation Rules
-```php
-'city_id'  => 'required|exists:cities,id',
-'name'     => 'required|string|max:150',
-'address'  => 'required|string|max:255',
-'phone'    => 'nullable|string|max:20',
-'cuisine'  => 'required|string|max:100',
-```
+---
 
-### Indexes
-- PRIMARY KEY (`restaurant_id`)
-- INDEX `restaurants_city_id_index` (`city_id`)
-- INDEX `restaurants_cuisine_index` (`cuisine`)
+### `POST /transport-bookings`
 
-### Example Record
+Create a transport booking. **Requires auth + tourist role.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `vehicle_id` | integer | Yes | must exist in `vehicles` |
+| `driver_id` | integer | Yes | must exist in `drivers` |
+| `room_id` | integer | No | must exist in `rooms` |
+| `distance_km` | number | Yes | gt:0 |
+| `booking_type` | string | Yes | `Hotel + Driver`, `Airport Transfer` |
+| `start_date` | date | Yes | after:today |
+| `end_date` | date | Yes | after_or_equal:start_date |
+
+**Response:** `201 Created`
+
 ```json
 {
-  "restaurant_id": 3,
-  "city_id": 1,
-  "name": "Cafe des Epices",
-  "address": "Rahba Kedima, Medina, Marrakech",
-  "phone": "+212524123457",
-  "cuisine": "Moroccan",
-  "created_at": "2026-01-20T11:00:00Z",
-  "updated_at": "2026-01-20T11:00:00Z"
+  "message": "Transport booking created successfully",
+  "booking": { ... }
 }
 ```
 
 ---
 
-## attractions
+### `GET /transport-bookings/{booking}`
 
-### Purpose
-Stores tourist attractions (monuments, museums, natural sites, activities) available for discovery within a city.
+Get a single transport booking. **Requires auth.**
 
-### Description
-The core content catalog entity for tourism discovery. Each attraction belongs to a city and can be reviewed and favorited by tourists, powering the recommendation and search features of the platform.
+---
 
-### Columns
+### `PATCH /transport-bookings/{booking}/cancel`
 
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| attraction_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| city_id | BIGINT UNSIGNED (FK) | No | — | References `cities.city_id` |
-| name | VARCHAR(150) | No | — | Attraction name |
-| description | TEXT | Yes | NULL | Full description |
-| address | VARCHAR(255) | Yes | NULL | Physical address |
-| opening_hours | VARCHAR(100) | Yes | NULL | Human-readable opening hours |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | Yes | NULL | Record update timestamp |
+Cancel a transport booking. **Requires auth.** Tourists can cancel their own; drivers can cancel assigned bookings.
 
-### Data Types
-`attraction_id`, `city_id`: `bigIncrements` · `name`, `address`, `opening_hours`: `string` · `description`: `text` · timestamps: `timestamp`
+**Response:** `200 OK`
 
-### Relationships
-- `attractions` **belongsTo** `cities`
-- `attractions` **hasMany** `reviews`
-- `attractions` **hasMany** `favorites`
-
-### Business Rules
-- Every attraction must belong to a valid city.
-- An attraction cannot be deleted if it has associated reviews or favorites (restrict on delete).
-
-### Laravel Relationships
-```php
-class Attraction extends Model
-{
-    public function city(): BelongsTo
-    {
-        return $this->belongsTo(City::class);
-    }
-
-    public function reviews(): HasMany
-    {
-        return $this->hasMany(Review::class);
-    }
-
-    public function favorites(): HasMany
-    {
-        return $this->hasMany(Favorite::class);
-    }
-}
-```
-
-### Validation Rules
-```php
-'city_id'        => 'required|exists:cities,id',
-'name'           => 'required|string|max:150',
-'description'    => 'nullable|string',
-'address'        => 'nullable|string|max:255',
-'opening_hours'  => 'nullable|string|max:100',
-```
-
-### Indexes
-- PRIMARY KEY (`attraction_id`)
-- INDEX `attractions_city_id_index` (`city_id`)
-
-### Example Record
 ```json
 {
-  "attraction_id": 8,
-  "city_id": 1,
-  "name": "Jardin Majorelle",
-  "description": "A botanical garden and artist's landscape garden in Marrakech.",
-  "address": "Rue Yves Saint Laurent, Marrakech",
-  "opening_hours": "08:00 - 18:00",
-  "created_at": "2026-01-06T11:00:00Z",
-  "updated_at": "2026-02-10T09:00:00Z"
+  "message": "Booking cancelled successfully",
+  "booking": { ... }
 }
 ```
 
 ---
 
-## bookings
+### `PATCH /transport-bookings/{booking}/status`
 
-### Purpose
-Stores all reservations made by tourists for hotel rooms and/or driver transport services.
+Update transport booking status. **Requires auth + driver role.**
 
-### Description
-The unified transactional record linking a `user` to a `room` and/or `driver` for a date range. The `booking_type` ENUM distinguishes between hotel-only, combined hotel+driver, and airport transfer bookings. Either `room_id` or `driver_id` (or both) may be NULL depending on the booking type.
+**Request Body:**
 
-### Columns
+| Field | Type | Required | Values |
+|-------|------|----------|--------|
+| `status` | string | Yes | `confirmed`, `completed` |
 
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| booking_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| user_id | BIGINT UNSIGNED (FK) | No | — | References `users.user_id` |
-| room_id | BIGINT UNSIGNED (FK) | Yes | NULL | References `rooms.room_id` (nullable) |
-| driver_id | BIGINT UNSIGNED (FK) | Yes | NULL | References `drivers.driver_id` (nullable) |
-| booking_number | VARCHAR(50) | No | — | Unique human-readable booking reference |
-| booking_type | ENUM | No | — | `'Hotel'`, `'Hotel + Driver'`, `'Airport Transfer'` |
-| booking_date | DATE | No | — | Date the booking was made |
-| start_date | DATE | No | — | Check-in or trip start date |
-| end_date | DATE | No | — | Check-out or trip end date |
-| total_price | DECIMAL(10,2) | No | — | Computed total price |
-| status | ENUM | No | `'Pending'` | `'Pending'`, `'Confirmed'`, `'Cancelled'`, `'Completed'` |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | Yes | NULL | Record update timestamp |
+**Response:** `200 OK`
 
-### Data Types
-`booking_id`, `user_id`, `room_id`, `driver_id`: `bigIncrements` · `booking_number`: `string` · `booking_type`, `status`: `enum` · `booking_date`, `start_date`, `end_date`: `date` · `total_price`: `decimal(10,2)` · timestamps: `timestamp`
-
-### Relationships
-- `bookings` **belongsTo** `users`
-- `bookings` **belongsTo** `rooms` (nullable)
-- `bookings` **belongsTo** `drivers` (nullable)
-
-### Business Rules
-- Every booking is made by exactly one user.
-- A booking may reserve one room and/or assign one driver (at least one must be non-NULL).
-- `booking_type = 'Hotel'` requires a non-NULL `room_id`.
-- `booking_type = 'Airport Transfer'` requires a non-NULL `driver_id`.
-- `booking_type = 'Hotel + Driver'` requires both `room_id` and `driver_id` to be non-NULL.
-- `end_date` must be strictly after `start_date`.
-- `total_price` is computed server-side (never trusted from client).
-- A booking can only transition `Pending -> Confirmed -> Completed`, or to `Cancelled` from `Pending`/`Confirmed`.
-- `booking_number` must be unique across the platform.
-
-### Laravel Relationships
-```php
-class Booking extends Model
-{
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function room(): BelongsTo
-    {
-        return $this->belongsTo(Room::class);
-    }
-
-    public function driver(): BelongsTo
-    {
-        return $this->belongsTo(Driver::class);
-    }
-}
-```
-
-### Validation Rules
-```php
-'user_id'         => 'required|exists:users,id',
-'room_id'         => 'nullable|exists:rooms,id',
-'driver_id'       => 'nullable|exists:drivers,id',
-'booking_number'  => 'required|string|max:50|unique:bookings,booking_number',
-'booking_type'    => 'required|in:Hotel,Hotel + Driver,Airport Transfer',
-'booking_date'    => 'required|date',
-'start_date'      => 'required|date|after_or_equal:today',
-'end_date'        => 'required|date|after:start_date',
-'status'          => 'nullable|in:Pending,Confirmed,Cancelled,Completed',
-```
-
-### Indexes
-- PRIMARY KEY (`booking_id`)
-- UNIQUE INDEX `bookings_booking_number_unique` (`booking_number`)
-- INDEX `bookings_user_id_index` (`user_id`)
-- INDEX `bookings_room_id_index` (`room_id`)
-- INDEX `bookings_driver_id_index` (`driver_id`)
-- INDEX `bookings_status_index` (`status`)
-- INDEX `bookings_start_date_index` (`start_date`)
-- INDEX `bookings_end_date_index` (`end_date`)
-
-### Example Record
 ```json
 {
-  "booking_id": 102,
-  "user_id": 15,
-  "room_id": 11,
-  "driver_id": null,
-  "booking_number": "BK-2026-00102",
-  "booking_type": "Hotel",
-  "booking_date": "2026-02-20",
-  "start_date": "2026-03-10",
-  "end_date": "2026-03-14",
-  "total_price": 340.00,
-  "status": "Confirmed",
-  "created_at": "2026-02-20T14:00:00Z",
-  "updated_at": "2026-02-20T14:05:00Z"
+  "message": "Booking status updated successfully",
+  "booking": { ... }
 }
 ```
 
 ---
 
-## reviews
+### `DELETE /transport-bookings/{booking}`
 
-### Purpose
-Stores user-submitted ratings and comments for hotels, drivers, or attractions.
+Delete a transport booking (admin only). **Requires auth + admin role.**
 
-### Description
-A table allowing a single reviews mechanism to serve multiple entity types via explicit nullable FKs. Exactly one of `hotel_id`, `driver_id`, or `attraction_id` must be non-NULL per review.
+**Response:** `200 OK`
 
-### Columns
-
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| review_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| user_id | BIGINT UNSIGNED (FK) | No | — | References `users.user_id` |
-| hotel_id | BIGINT UNSIGNED (FK) | Yes | NULL | References `hotels.hotel_id` |
-| driver_id | BIGINT UNSIGNED (FK) | Yes | NULL | References `drivers.driver_id` |
-| attraction_id | BIGINT UNSIGNED (FK) | Yes | NULL | References `attractions.attraction_id` |
-| rating | TINYINT UNSIGNED | No | — | 1 to 5 |
-| comment | TEXT | Yes | NULL | Free-text review |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
-
-### Data Types
-`review_id`, `user_id`, `hotel_id`, `driver_id`, `attraction_id`: `bigIncrements` · `rating`: `tinyInteger` · `comment`: `text` · timestamp: `timestamp`
-
-### Relationships
-- `reviews` **belongsTo** `users`
-- `reviews` **belongsTo** `hotels` (nullable)
-- `reviews` **belongsTo** `drivers` (nullable)
-- `reviews` **belongsTo** `attractions` (nullable)
-
-### Business Rules
-- `rating` must be between 1 and 5 inclusive.
-- A tourist can create reviews only after completing a booking with `status = 'Completed'` tied to the reviewed entity.
-- Exactly one of `hotel_id`, `driver_id`, or `attraction_id` must be non-NULL.
-- A user may leave only one review per entity (enforced via unique composite index per entity type).
-
-### Laravel Relationships
-```php
-class Review extends Model
+```json
 {
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function hotel(): BelongsTo
-    {
-        return $this->belongsTo(Hotel::class);
-    }
-
-    public function driver(): BelongsTo
-    {
-        return $this->belongsTo(Driver::class);
-    }
-
-    public function attraction(): BelongsTo
-    {
-        return $this->belongsTo(Attraction::class);
-    }
+  "message": "Booking deleted successfully"
 }
 ```
 
-### Validation Rules
-```php
-'user_id'       => 'required|exists:users,id',
-'hotel_id'      => 'nullable|exists:hotels,id',
-'driver_id'     => 'nullable|exists:drivers,id',
-'attraction_id' => 'nullable|exists:attractions,id',
-'rating'        => 'required|integer|between:1,5',
-'comment'       => 'nullable|string|max:2000',
+---
+
+## Reviews
+
+### `GET /reviews`
+
+List all reviews. **Requires auth.**
+
+**Response:** `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "rating": 5,
+    "comment": "Excellent hotel, great service!",
+    "created_at": "2026-08-12T00:00:00.000000Z",
+    "user": {
+      "id": 1,
+      "first_name": "Mohamed",
+      "last_name": "Ali"
+    },
+    "hotel": {
+      "id": 1,
+      "name": "Riad Marrakech"
+    }
+  }
+]
 ```
 
-### Indexes
-- PRIMARY KEY (`review_id`)
-- INDEX `reviews_user_id_index` (`user_id`)
-- INDEX `reviews_hotel_id_index` (`hotel_id`)
-- INDEX `reviews_driver_id_index` (`driver_id`)
-- INDEX `reviews_attraction_id_index` (`attraction_id`)
-- INDEX `reviews_rating_index` (`rating`)
+---
 
-### Example Record
+### `POST /reviews`
+
+Create a review. **Requires auth + tourist role.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `rating` | integer | Yes | between:1-5 |
+| `comment` | string | No | max:1000 |
+| `hotel_id` | integer | No | must exist in `hotels` |
+| `driver_id` | integer | No | must exist in `drivers` |
+| `attraction_id` | integer | No | must exist in `attractions` |
+
+At least one of `hotel_id`, `driver_id`, or `attraction_id` must be provided.
+
+**Response:** `201 Created`
+
 ```json
 {
-  "review_id": 214,
-  "user_id": 15,
-  "hotel_id": 4,
-  "driver_id": null,
-  "attraction_id": null,
+  "id": 1,
   "rating": 5,
-  "comment": "Beautiful riad, incredible hospitality, would book again!",
-  "created_at": "2026-03-15T08:00:00Z"
+  "comment": "Excellent hotel, great service!",
+  "created_at": "2026-08-12T00:00:00.000000Z",
+  "user": { ... },
+  "hotel": { ... }
 }
 ```
 
 ---
 
-## favorites
+### `GET /reviews/{review}`
 
-### Purpose
-Stores "saved" hotels, restaurants, and attractions bookmarked by a user for quick future access.
+Get a single review. **Requires auth.**
 
-### Description
-A lightweight table representing a user's wishlist across multiple catalog entity types. Exactly one of `hotel_id`, `restaurant_id`, or `attraction_id` must be non-NULL per record.
+---
 
-### Columns
+### `PUT /reviews/{review}`
 
-| Column | Type | Nullable | Default | Description |
-|---|---|---|---|---|
-| favorite_id | BIGINT UNSIGNED (PK) | No | auto | Primary key |
-| user_id | BIGINT UNSIGNED (FK) | No | — | References `users.user_id` |
-| hotel_id | BIGINT UNSIGNED (FK) | Yes | NULL | References `hotels.hotel_id` |
-| restaurant_id | BIGINT UNSIGNED (FK) | Yes | NULL | References `restaurants.restaurant_id` |
-| attraction_id | BIGINT UNSIGNED (FK) | Yes | NULL | References `attractions.attraction_id` |
-| created_at | TIMESTAMP | Yes | NULL | Record creation timestamp |
+Update a review. **Requires auth.** Must be the review author.
 
-### Data Types
-`favorite_id`, `user_id`, `hotel_id`, `restaurant_id`, `attraction_id`: `bigIncrements` · timestamp: `timestamp`
+**Request Body:** Same as `POST /reviews` but all fields optional.
 
-### Relationships
-- `favorites` **belongsTo** `users`
-- `favorites` **belongsTo** `hotels` (nullable)
-- `favorites` **belongsTo** `restaurants` (nullable)
-- `favorites` **belongsTo** `attractions` (nullable)
+**Response:** `200 OK`
 
-### Business Rules
-- A user cannot favorite the same entity twice (enforced via unique composite index per entity type).
-- Exactly one of `hotel_id`, `restaurant_id`, or `attraction_id` must be non-NULL.
-- Favorites are removed automatically (cascade) if the underlying entity is permanently deleted.
+---
 
-### Laravel Relationships
-```php
-class Favorite extends Model
-{
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
+### `DELETE /reviews/{review}`
 
-    public function hotel(): BelongsTo
-    {
-        return $this->belongsTo(Hotel::class);
-    }
+Delete a review. **Requires auth.** Must be the review author.
 
-    public function restaurant(): BelongsTo
-    {
-        return $this->belongsTo(Restaurant::class);
-    }
+**Response:** `200 OK`
 
-    public function attraction(): BelongsTo
-    {
-        return $this->belongsTo(Attraction::class);
-    }
-}
+---
+
+## Favorites
+
+### `GET /favorites`
+
+List the authenticated user's favorites. **Requires auth.**
+
+**Response:** `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "created_at": "2026-08-12T00:00:00.000000Z",
+    "hotel_id": 1,
+    "attraction_id": null,
+    "restaurant_id": null,
+    "hotel": { ... },
+    "attraction": null,
+    "restaurant": null
+  }
+]
 ```
 
-### Validation Rules
-```php
-'user_id'       => 'required|exists:users,id',
-'hotel_id'      => 'nullable|exists:hotels,id',
-'restaurant_id' => 'nullable|exists:restaurants,id',
-'attraction_id' => 'nullable|exists:attractions,id',
-```
+---
 
-### Indexes
-- PRIMARY KEY (`favorite_id`)
-- INDEX `favorites_user_id_index` (`user_id`)
-- INDEX `favorites_hotel_id_index` (`hotel_id`)
-- INDEX `favorites_restaurant_id_index` (`restaurant_id`)
-- INDEX `favorites_attraction_id_index` (`attraction_id`)
+### `POST /favorites/toggle`
 
-### Example Record
+Toggle a favorite (add if not exists, remove if exists). **Requires auth.**
+
+**Request Body:**
+
+| Field | Type | Required | Values |
+|-------|------|----------|--------|
+| `type` | string | Yes | `hotel`, `attraction`, `restaurant` |
+| `id` | integer | Yes | ID of the item |
+
+**Request Example:**
+
 ```json
 {
-  "favorite_id": 341,
-  "user_id": 15,
-  "hotel_id": null,
-  "restaurant_id": null,
-  "attraction_id": 8,
-  "created_at": "2026-02-18T16:45:00Z"
+  "type": "hotel",
+  "id": 1
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Favorite added",
+  "is_favorite": true
+}
+```
+
+or
+
+```json
+{
+  "message": "Favorite removed",
+  "is_favorite": false
 }
 ```
 
 ---
 
-## Indexing Strategy
+### `DELETE /favorites/{favorite}`
 
-| Purpose | Approach |
-|---|---|
-| Primary key lookups | Clustered `BIGINT UNSIGNED` auto-increment on every table |
-| Foreign key joins | Explicit index on every `*_id` foreign key column |
-| Search/filter columns | Indexes on `cuisine`, `status`, `type`, `region` |
-| Uniqueness constraints | Unique indexes on `email`, `phone`, `booking_number`, `license_number`, `registration_number`, `name` (cities) |
-| Availability queries | Indexes on `start_date` / `end_date` for fast overlap checks on bookings |
-| Rating lookups | Index on `rating` column in reviews for filtering/sorting |
+Remove a favorite by its ID. **Requires auth.**
 
-notice 
-in api.php file I need to add a name spece instead of using \App\Http\Controllers\HotelManager\
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Favorite removed"
+}
+```
+
+---
+
+## User Profile
+
+### `GET /profile`
+
+Get the authenticated user's full profile. **Requires auth.**
+
+**Response:** `200 OK` — User object.
+
+---
+
+### `PUT /profile`
+
+Update the authenticated user's profile. **Requires auth.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `first_name` | string | Yes | max:100 |
+| `last_name` | string | Yes | max:100 |
+| `email` | string | Yes | email, max:150, unique (excl. self) |
+| `phone` | string | Yes | max:20, unique (excl. self) |
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Profile updated successfully",
+  "user": { ... }
+}
+```
+
+---
+
+### `PUT /profile/driver`
+
+Update the authenticated user's driver profile. **Requires auth.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `city_id` | integer | Yes | must exist in `cities` |
+| `license_number` | string | Yes | max:20, unique (excl. self) |
+| `years_of_experience` | integer | No | min:0 |
+| `languages` | string | No | max:255 |
+| `available` | boolean | No | — |
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Driver profile updated successfully",
+  "driver": { ... }
+}
+```
+
+---
+
+## Admin Trashed Items
+
+### `GET /admin/trashed/hotels`
+
+List soft-deleted hotels. **Requires auth + admin role.**
+
+**Response:** `200 OK` — Paginated list of trashed hotels.
+
+---
+
+### `POST /admin/trashed/hotels/{id}/restore`
+
+Restore a soft-deleted hotel. **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Hotel restored successfully",
+  "hotel": { ... }
+}
+```
+
+---
+
+### `DELETE /admin/trashed/hotels/{id}/force`
+
+Permanently delete a hotel. **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Hotel permanently deleted"
+}
+```
+
+---
+
+### `GET /admin/trashed/rooms`
+
+List soft-deleted rooms. **Requires auth + admin role.**
+
+**Response:** `200 OK` — Paginated list of trashed rooms.
+
+---
+
+### `POST /admin/trashed/rooms/{id}/restore`
+
+Restore a soft-deleted room. **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Room restored successfully",
+  "room": { ... }
+}
+```
+
+---
+
+### `DELETE /admin/trashed/rooms/{id}/force`
+
+Permanently delete a room. **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Room permanently deleted"
+}
+```
+
+---
+
+## Admin Hotel Bookings
+
+### `GET /admin/hotel-bookings`
+
+List all hotel bookings (admin view). **Requires auth + admin role.**
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter by status |
+| `search` | string | Search by booking_number or user name |
+| `per_page` | integer | Results per page (default: 15) |
+
+**Response:** `200 OK` — Paginated list of bookings.
+
+---
+
+### `DELETE /admin/hotel-bookings/{booking}`
+
+Delete a hotel booking (admin). **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Booking deleted successfully"
+}
+```
+
+---
+
+### `PATCH /admin/hotel-bookings/{booking}/status`
+
+Update hotel booking status (admin). **Requires auth + admin role.**
+
+**Request Body:**
+
+| Field | Type | Required | Values |
+|-------|------|----------|--------|
+| `status` | string | Yes | `confirmed`, `completed`, `cancelled` |
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Booking status updated successfully",
+  "booking": { ... }
+}
+```
+
+---
+
+## Admin Transport Bookings
+
+### `GET /admin/transport-bookings`
+
+List all transport bookings (admin view). **Requires auth + admin role.**
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter by status |
+| `search` | string | Search by booking_number or user name |
+| `per_page` | integer | Results per page (default: 15) |
+
+---
+
+### `DELETE /admin/transport-bookings/{booking}`
+
+Delete a transport booking (admin). **Requires auth + admin role.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "message": "Booking deleted successfully"
+}
+```
+
+---
+
+### `PATCH /admin/transport-bookings/{booking}/status`
+
+Update transport booking status (admin). **Requires auth + admin role.**
+
+**Request Body:**
+
+| Field | Type | Required | Values |
+|-------|------|----------|--------|
+| `status` | string | Yes | `confirmed`, `completed`, `cancelled` |
+
+---
+
+## Hotel Manager Routes
+
+All hotel manager routes are prefixed with `/hotel-manager` and require `hotel_manager` role.
+
+### `GET /hotel-manager/manage-hotel`
+
+List hotels owned by the authenticated hotel manager. **Requires auth + hotel_manager role.**
+
+**Response:** `200 OK` — Paginated list of hotels.
+
+---
+
+### `POST /hotel-manager/manage-hotel`
+
+Create a hotel. **Requires auth + hotel_manager role.**
+
+**Request Body:** Same as `POST /hotels`.
+
+---
+
+### `GET /hotel-manager/manage-hotel/{hotel}`
+
+Get a single hotel. **Requires auth + hotel_manager role.**
+
+---
+
+### `PUT /hotel-manager/manage-hotel/{hotel}`
+
+Update a hotel. **Requires auth + hotel_manager role.**
+
+---
+
+### `DELETE /hotel-manager/manage-hotel/{hotel}`
+
+Soft delete a hotel. **Requires auth + hotel_manager role.**
+
+---
+
+### `GET /hotel-manager/manage-hotel/trashed`
+
+List soft-deleted hotels. **Requires auth + hotel_manager role.**
+
+---
+
+### `POST /hotel-manager/manage-hotel/{hotel}/restore`
+
+Restore a soft-deleted hotel. **Requires auth + hotel_manager role.**
+
+---
+
+### `DELETE /hotel-manager/manage-hotel/{hotel}/force-delete`
+
+Permanently delete a hotel. **Requires auth + hotel_manager role.**
+
+---
+
+### `GET /hotel-manager/manage-rooms`
+
+List rooms for the hotel manager's hotels. **Requires auth + hotel_manager role.**
+
+---
+
+### `POST /hotel-manager/manage-rooms`
+
+Create a room. **Requires auth + hotel_manager role.**
+
+---
+
+### `GET /hotel-manager/manage-rooms/{room}`
+
+Get a single room (includes trashed). **Requires auth + hotel_manager role.**
+
+---
+
+### `PUT /hotel-manager/manage-rooms/{room}`
+
+Update a room. **Requires auth + hotel_manager role.**
+
+---
+
+### `DELETE /hotel-manager/manage-rooms/{room}`
+
+Soft delete a room. **Requires auth + hotel_manager role.**
+
+---
+
+### `GET /hotel-manager/manage-rooms/trashed`
+
+List soft-deleted rooms. **Requires auth + hotel_manager role.**
+
+---
+
+### `POST /hotel-manager/manage-rooms/{room}/restore`
+
+Restore a soft-deleted room. **Requires auth + hotel_manager role.**
+
+---
+
+### `DELETE /hotel-manager/manage-rooms/{room}/force-delete`
+
+Permanently delete a room. **Requires auth + hotel_manager role.**
+
+---
+
+## Driver Routes
+
+All driver routes are prefixed with `/driver` and require `driver` role.
+
+### `GET /driver/manage-vehicle`
+
+List vehicles for the authenticated driver. **Requires auth + driver role.**
+
+---
+
+### `POST /driver/manage-vehicle`
+
+Create a vehicle. **Requires auth + driver role.**
+
+---
+
+### `GET /driver/manage-vehicle/{vehicle}`
+
+Get a single vehicle. **Requires auth + driver role.**
+
+---
+
+### `PUT /driver/manage-vehicle/{vehicle}`
+
+Update a vehicle. **Requires auth + driver role.**
+
+---
+
+### `DELETE /driver/manage-vehicle/{vehicle}`
+
+Delete a vehicle. **Requires auth + driver role.**
+
+---
+
+### `GET /driver/transport-bookings`
+
+List transport bookings for the driver. **Requires auth + driver role.**
+
+---
+
+### `GET /driver/transport-bookings/{booking}`
+
+Get a single transport booking. **Requires auth + driver role.**
+
+---
+
+### `PUT /driver/transport-bookings/{booking}`
+
+Update a transport booking. **Requires auth + driver role.**
+
+---
+
+## AI Itinerary
+
+### `POST /ai/itinerary`
+
+Generate a travel itinerary using AI. **Requires auth.**
+
+**Request Body:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `city_id` | integer | Yes | must exist in `cities` |
+| `preferences` | string | Yes | `adventure`, `cultural`, `relaxation` |
+| `number_of_days` | integer | Yes | min:1, max:14 |
+| `budget` | string | Yes | `LOW`, `MEDIUM`, `HIGH` |
+
+**Request Example:**
+
+```json
+{
+  "city_id": 1,
+  "preferences": "cultural",
+  "number_of_days": 3,
+  "budget": "MEDIUM"
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "city": "Marrakech",
+  "preferences": "cultural",
+  "budget": "MEDIUM",
+  "total_days": 3,
+  "estimated_total_cost": "$450",
+  "itinerary": [
+    {
+      "day": 1,
+      "title": "Exploring the Medina",
+      "activities": [
+        {
+          "time": "09:00",
+          "activity": "Visit Jemaa el-Fnaa square",
+          "location": "Jemaa el-Fnaa"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### `GET /ai/itinerary/{itineraryJob}/status`
+
+Check the status of an itinerary generation job. **Requires auth.**
+
+**Response:** `200 OK`
+
+```json
+{
+  "status": "completed",
+  "result": { ... }
+}
+```
+
+---
+
+## Error Codes
+
+| Status | Description |
+|--------|-------------|
+| `400` | Bad Request — Malformed syntax |
+| `401` | Unauthorized — Missing or invalid token |
+| `403` | Forbidden — Insufficient permissions |
+| `404` | Not Found — Resource does not exist |
+| `409` | Conflict — e.g., deleting role with assigned users |
+| `422` | Unprocessable Content — Validation failed |
+| `500` | Internal Server Error |
+
+**Standard Error Response:**
+
+```json
+{
+  "message": "Error description here",
+  "errors": {
+    "field_name": ["Specific validation error message"]
+  }
+}
+```
+
+**Validation Error Example (422):**
+
+```json
+{
+  "message": "The first name field is required. (and 2 more errors)",
+  "errors": {
+    "first_name": ["The first name field is required."],
+    "last_name": ["The last name field is required."],
+    "phone": ["The phone field is required."]
+  }
+}
+```

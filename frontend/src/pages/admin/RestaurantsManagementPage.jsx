@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import apiClient from '../../services/apiClient'
+import apiClient, { extractData } from '../../services/apiClient'
 import Skeleton from '../../components/ui/Skeleton'
 
 const emptyForm = { name: '', city_id: '', cuisine: '', description: '', address: '', phone: '', price_range: 2 }
@@ -32,7 +32,7 @@ export default function RestaurantsManagementPage() {
   const fetchRestaurants = async () => {
     try {
       const res = await apiClient.get('/admin/restaurants')
-      setRestaurants(res.data.data || res.data || [])
+      setRestaurants(extractData(res))
     } catch (err) {
       setError('Failed to load restaurants.')
     } finally {
@@ -43,7 +43,7 @@ export default function RestaurantsManagementPage() {
   const fetchCities = async () => {
     try {
       const res = await apiClient.get('/cities')
-      setCities(res.data.data || res.data || [])
+      setCities(extractData(res))
     } catch (err) {
       console.error('Failed to load cities:', err)
     }

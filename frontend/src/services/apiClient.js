@@ -48,4 +48,11 @@ apiClient.interceptors.response.use(
   }
 )
 
+export function extractData(response) {
+  const data = response.data
+  if (Array.isArray(data)) return data
+  if (data && Array.isArray(data.data)) return data.data
+  return data
+}
+
 export default apiClient

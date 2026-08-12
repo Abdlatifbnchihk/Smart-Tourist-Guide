@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import apiClient from '../../services/apiClient'
+import apiClient, { extractData } from '../../services/apiClient'
 import Skeleton from '../../components/ui/Skeleton'
 
 export default function HotelManagerDashboardPage() {
@@ -18,7 +18,7 @@ export default function HotelManagerDashboardPage() {
     try {
       // GET /api/v1/hotel-manager/manage-hotel - returns paginated hotels
       const res = await apiClient.get('/hotel-manager/manage-hotel')
-      const hotels = res.data.data || []
+      const hotels = extractData(res)
 
       const totalRooms = hotels.reduce((sum, hotel) => sum + (hotel.rooms_count || 0), 0)
       const avgRating = hotels.length > 0
@@ -43,7 +43,7 @@ export default function HotelManagerDashboardPage() {
     try {
       // GET /api/v1/hotel-bookings - returns bookings for manager's hotels
       const res = await apiClient.get('/hotel-bookings')
-      const allBookings = res.data.data || []
+      const allBookings = extractData(res)
 
       const pending = allBookings.filter(b => b.status === 'Pending').length
       const confirmed = allBookings.filter(b => b.status === 'Confirmed').length

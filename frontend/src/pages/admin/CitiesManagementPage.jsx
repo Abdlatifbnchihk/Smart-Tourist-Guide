@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import apiClient from '../../services/apiClient'
+import apiClient, { extractData } from '../../services/apiClient'
 import Skeleton from '../../components/ui/Skeleton'
 
 const emptyForm = { name: '', region: '', description: '' }
@@ -27,7 +27,7 @@ export default function CitiesManagementPage() {
   const fetchCities = async () => {
     try {
       const res = await apiClient.get('/cities')
-      setCities(res.data.data || res.data || [])
+      setCities(extractData(res))
     } catch (err) {
       setError('Failed to load cities.')
     } finally {

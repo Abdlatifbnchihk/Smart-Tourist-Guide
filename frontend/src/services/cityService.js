@@ -1,8 +1,8 @@
-import apiClient from './apiClient'
+import apiClient, { extractData } from './apiClient'
 
 export async function getCities() {
   const response = await apiClient.get('/cities')
-  return response.data
+  return extractData(response)
 }
 
 export async function getCity(id) {

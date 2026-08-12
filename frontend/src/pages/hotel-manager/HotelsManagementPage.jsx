@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import apiClient from '../../services/apiClient'
+import apiClient, { extractData } from '../../services/apiClient'
 import Skeleton from '../../components/ui/Skeleton'
 
 const emptyForm = { name: '', address: '', phone: '', email: '', description: '', stars: 3, city_id: '' }
@@ -30,7 +30,7 @@ export default function HotelsManagementPage() {
     try {
       // GET /api/v1/hotel-manager/manage-hotel - returns paginated hotels
       const res = await apiClient.get('/hotel-manager/manage-hotel')
-      setHotels(res.data.data || [])
+      setHotels(extractData(res))
     } catch (err) {
       setError('Failed to load hotels.')
     } finally {
@@ -42,7 +42,7 @@ export default function HotelsManagementPage() {
     try {
       // GET /api/v1/cities - returns all cities
       const res = await apiClient.get('/cities')
-      setCities(res.data.data || [])
+      setCities(Array.isArray(res.data) ? res.data : res.data.data || [])
     } catch (err) {
       console.error('Failed to load cities:', err)
     }

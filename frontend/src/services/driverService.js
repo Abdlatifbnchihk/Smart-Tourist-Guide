@@ -82,5 +82,5 @@ export async function cancelBooking(id) {
 
 export async function getCities() {
   const response = await apiClient.get('/cities')
-  return response.data
+  return Array.isArray(response.data) ? response.data : response.data.data
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import apiClient from '../../services/apiClient'
+import apiClient, { extractData } from '../../services/apiClient'
 import Skeleton from '../../components/ui/Skeleton'
 
 const emptyForm = { number: '', type: 'single', capacity: 1, price_per_night: '', available: true }
@@ -33,7 +33,7 @@ export default function RoomsManagementPage() {
   const fetchHotel = async () => {
     try {
       const res = await apiClient.get(`/hotels/${hotelId}`)
-      setHotel(res.data.data || res.data)
+      setHotel(extractData(res))
     } catch (err) {
       console.error('Failed to load hotel:', err)
     }
@@ -42,7 +42,7 @@ export default function RoomsManagementPage() {
   const fetchRooms = async () => {
     try {
       const res = await apiClient.get(`/hotels/${hotelId}/rooms`)
-      setRooms(res.data.data || [])
+      setRooms(extractData(res))
     } catch (err) {
       setError('Failed to load rooms.')
     } finally {

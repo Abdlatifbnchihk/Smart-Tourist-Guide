@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import apiClient from '../../services/apiClient'
+import apiClient, { extractData } from '../../services/apiClient'
 import Skeleton from '../../components/ui/Skeleton'
 
 export default function AllRoomsPage() {
@@ -34,7 +34,7 @@ export default function AllRoomsPage() {
     try {
       // GET /api/v1/hotel-manager/manage-rooms - returns all rooms for manager's hotels
       const res = await apiClient.get('/hotel-manager/manage-rooms')
-      setRooms(res.data.data || [])
+      setRooms(extractData(res))
     } catch (err) {
       setError('Failed to load rooms.')
     } finally {
@@ -46,7 +46,7 @@ export default function AllRoomsPage() {
     try {
       // GET /api/v1/hotel-manager/manage-hotel - returns manager's hotels
       const res = await apiClient.get('/hotel-manager/manage-hotel')
-      setHotels(res.data.data || [])
+      setHotels(extractData(res))
     } catch (err) {
       console.error('Failed to load hotels:', err)
     }

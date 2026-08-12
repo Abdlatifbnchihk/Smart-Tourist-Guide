@@ -153,5 +153,5 @@ export async function getDashboardStats() {
 
 export async function getCities() {
   const response = await apiClient.get('/cities')
-  return response.data
+  return extractData(response)
 }

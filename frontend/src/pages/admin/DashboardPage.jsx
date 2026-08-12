@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import apiClient from '../../services/apiClient'
+import apiClient, { extractData } from '../../services/apiClient'
 import { getAllHotelBookings, getAllTransportBookings } from '../../services/bookingService'
 import Skeleton from '../../components/ui/Skeleton'
 
@@ -45,7 +45,7 @@ export default function DashboardPage() {
     const fetchStats = async () => {
       try {
         const res = await apiClient.get('/admin/stats')
-        setStats(res.data.data)
+        setStats(extractData(res))
       } catch (err) {
         console.error('Stats error:', err)
         setError(err.message || 'Failed to load dashboard stats.')

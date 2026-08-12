@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import apiClient from '../../services/apiClient'
+import apiClient, { extractData } from '../../services/apiClient'
 import Skeleton from '../../components/ui/Skeleton'
 
 export default function BookingsManagementPage() {
@@ -21,7 +21,7 @@ export default function BookingsManagementPage() {
       // GET /api/v1/hotel-bookings - returns bookings for manager's hotels
       const params = statusFilter !== 'all' ? `?status=${statusFilter}` : ''
       const res = await apiClient.get(`/hotel-bookings${params}`)
-      setBookings(res.data.data || [])
+      setBookings(extractData(res))
     } catch (err) {
       setError('Failed to load bookings.')
     } finally {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import apiClient from '../services/apiClient'
+import apiClient, { extractData } from '../services/apiClient'
 import Skeleton from '../components/ui/Skeleton'
 import HotelCard from '../components/ui/HotelCard'
 import RestaurantCard from '../components/ui/RestaurantCard'
@@ -22,7 +22,7 @@ export default function CityDetailPage() {
     const fetchCity = async () => {
       try {
         const res = await apiClient.get(`/cities/${id}`)
-        setCity(res.data.data)
+        setCity(extractData(res))
       } catch (err) {
         setError('Failed to load city details. Please try again later.')
       } finally {
